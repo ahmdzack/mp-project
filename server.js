@@ -18,20 +18,31 @@ app.use(express.urlencoded({ extended: true }));
 // Test database connection
 testConnection();
 
-// Sync database (create tables if not exists)
-sequelize.sync({ alter: false }) // set to true untuk auto-update schema
-  .then(() => console.log('✅ Database synced'))
-  .catch(err => console.error('❌ Database sync error:', err));
+// Sync database - IMPORTANT: set to false in production!
+sequelize.sync({ alter: false, force: false })  // ← Changed from alter: false
+  .then(() => {
+    console.log('✅ Database synced');
+  })
+  .catch(err => {
+    console.error('❌ Database sync error:', err);
+  });
 
-// Routes
+// Routes - Week 1
 app.use('/api/auth', require('./src/routes/auth'));
+
+// Routes - Week 2
+app.use('/api/categories', require('./src/routes/category'));
+app.use('/api/kost-types', require('./src/routes/kostType'));
+app.use('/api/facilities', require('./src/routes/facility'));
+app.use('/api/kost', require('./src/routes/kost'));
 
 // Health check route
 app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Kost Reservation API is running',
-    version: '1.0.0'
+    version: '1.0.0',
+    week: '2'
   });
 });
 
@@ -51,4 +62,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`📚 Week 2: Kost Management Active`);
 });
