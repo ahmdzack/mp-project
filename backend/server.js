@@ -36,6 +36,13 @@ app.use('/api/kost-types', require('./src/routes/kostType'));
 app.use('/api/facilities', require('./src/routes/facility'));
 app.use('/api/kost', require('./src/routes/kost'));
 
+// Routes - Week 3 (NEW)
+app.use('/api/kost', require('./src/routes/kostImage'));
+
+// Test Cloudinary connection
+const { testCloudinaryConnection } = require('./src/config/cloudinary');
+testCloudinaryConnection();
+
 // Health check route
 app.get('/', (req, res) => {
   res.json({

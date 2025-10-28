@@ -52,16 +52,26 @@ const createKost = async (req, res) => {
     // Get complete kost data
     const kostWithRelations = await Kost.findByPk(kost.id, {
       include: [
-        { model: Category, attributes: ['id', 'name'] },
-        { model: KostType, attributes: ['id', 'name'] },
-        { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] }
+        { model: Category, as: 'Category', attributes: ['id', 'name'] },
+        { model: KostType, as: 'KostType', attributes: ['id', 'name'] },
+        { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] },
+        { 
+          model: KostImage, 
+          as: 'images', 
+          attributes: ['id', 'image_url', 'is_primary'],
+          separate: true,
+          order: [['is_primary', 'DESC']]
+        }
       ]
     });
+
+    const kostJSON = kostWithRelations.toJSON();
+    kostJSON.primary_image = kostJSON.images?.find(img => img.is_primary)?.image_url || null;
 
     res.status(201).json({
       success: true,
       message: 'Kost created successfully. Waiting for admin approval.',
-      data: kostWithRelations
+      data: kostJSON
     });
 
   } catch (error) {
@@ -142,15 +152,28 @@ const getAllKost = async (req, res) => {
     const { count, rows } = await Kost.findAndCountAll({
       where,
       include: [
-        { model: Category, attributes: ['id', 'name'] },
-        { model: KostType, attributes: ['id', 'name'] },
+        { model: Category, as: 'Category', attributes: ['id', 'name'] },
+        { model: KostType, as: 'KostType', attributes: ['id', 'name'] },
         { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] },
-        { model: KostImage, as: 'images', attributes: ['id', 'image_url', 'is_primary'] },
+        { 
+          model: KostImage, 
+          as: 'images', 
+          attributes: ['id', 'image_url', 'is_primary'],
+          separate: true,
+          order: [['is_primary', 'DESC'], ['created_at', 'ASC']]
+        },
         { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'phone'] }
       ],
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['created_at', 'DESC']]
+    });
+
+    // Add primary_image field to each kost
+    const kostsWithPrimaryImage = rows.map(kost => {
+      const kostJSON = kost.toJSON();
+      kostJSON.primary_image = kostJSON.images?.find(img => img.is_primary)?.image_url || null;
+      return kostJSON;
     });
 
     res.status(200).json({
@@ -159,7 +182,7 @@ const getAllKost = async (req, res) => {
       total: count,
       page: parseInt(page),
       totalPages: Math.ceil(count / limit),
-      data: rows
+      data: kostsWithPrimaryImage
     });
 
   } catch (error) {
@@ -180,10 +203,16 @@ const getKostById = async (req, res) => {
 
     const kost = await Kost.findByPk(id, {
       include: [
-        { model: Category, attributes: ['id', 'name'] },
-        { model: KostType, attributes: ['id', 'name'] },
+        { model: Category, as: 'Category', attributes: ['id', 'name'] },
+        { model: KostType, as: 'KostType', attributes: ['id', 'name'] },
         { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] },
-        { model: KostImage, as: 'images', attributes: ['id', 'image_url', 'is_primary'] },
+        { 
+          model: KostImage, 
+          as: 'images', 
+          attributes: ['id', 'image_url', 'is_primary', 'created_at'],
+          separate: true,
+          order: [['is_primary', 'DESC'], ['created_at', 'ASC']]
+        },
         { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'phone'] },
         { model: User, as: 'approver', attributes: ['id', 'name'] }
       ]
@@ -212,9 +241,13 @@ const getKostById = async (req, res) => {
       }
     }
 
+    // Add primary_image field
+    const kostJSON = kost.toJSON();
+    kostJSON.primary_image = kostJSON.images?.find(img => img.is_primary)?.image_url || null;
+
     res.status(200).json({
       success: true,
-      data: kost
+      data: kostJSON
     });
 
   } catch (error) {
@@ -293,16 +326,26 @@ const updateKost = async (req, res) => {
     // Get updated kost
     const updatedKost = await Kost.findByPk(id, {
       include: [
-        { model: Category, attributes: ['id', 'name'] },
-        { model: KostType, attributes: ['id', 'name'] },
-        { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] }
+        { model: Category, as: 'Category', attributes: ['id', 'name'] },
+        { model: KostType, as: 'KostType', attributes: ['id', 'name'] },
+        { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] },
+        { 
+          model: KostImage, 
+          as: 'images', 
+          attributes: ['id', 'image_url', 'is_primary'],
+          separate: true,
+          order: [['is_primary', 'DESC']]
+        }
       ]
     });
+
+    const kostJSON = updatedKost.toJSON();
+    kostJSON.primary_image = kostJSON.images?.find(img => img.is_primary)?.image_url || null;
 
     res.status(200).json({
       success: true,
       message: 'Kost updated successfully',
-      data: updatedKost
+      data: kostJSON
     });
 
   } catch (error) {
