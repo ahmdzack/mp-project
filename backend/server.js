@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const { sequelize, testConnection } = require('./src/config/database');
 const { errorHandler } = require('./src/middlewares/errorHandler');
 
-// Load env vars
+// Load environment variables
 dotenv.config();
 
 // Initialize express app
