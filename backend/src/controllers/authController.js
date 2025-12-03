@@ -43,72 +43,34 @@ const register = async (req, res) => {
         autoVerified: true
       }
     });
-    return;
 
     /* ORIGINAL CODE - Uncomment when email service is working
-    // Skip email verification for superadmin or specific admin emails
-    if (role === 'superadmin' || email === 'admin@kostku.com' || email === 'admin@test.com') {
-      console.log('✅ Admin account registered and auto-verified:', email);
-      
-      res.status(201).json({
-        success: true,
-        message: 'Admin registration successful! You can login now.',
-        data: {
-          user: user,
-          email: email,
-          needsVerification: false,
-          autoVerified: true
-        }
-      });
-      return;
-    }
-
-    // Generate email verification code for regular users (6-digit)
     const verificationCode = generateRandomCode(6);
     
     await EmailVerification.create({
       user_id: user.id,
       code: verificationCode,
-      expires_at: getExpirationTime(1) // 1 hour
+      expires_at: getExpirationTime(1)
     });
 
-    // Send verification email with code (don't block registration if email fails)
-    let emailSent = false;
     try {
-      console.log('📤 Attempting to send verification email to:', email);
-      console.log('📧 Generated verification code:', verificationCode);
-      
       await sendVerificationEmail(email, name, verificationCode);
-      
-      emailSent = true;
-      console.log('✅ ✅ ✅ VERIFICATION EMAIL SENT SUCCESSFULLY! ✅ ✅ ✅');
-      console.log('📧 To:', email);
-      console.log('🔢 Code:', verificationCode);
-      console.log('⏰ Expires in: 1 hour');
-      console.log('='.repeat(60));
+      console.log('✅ Verification email sent');
     } catch (emailError) {
-      console.error('❌ ❌ ❌ FAILED TO SEND EMAIL! ❌ ❌ ❌');
-      console.error('Error:', emailError.message);
-      console.error('Stack:', emailError.stack);
-      console.log('⚠️ Registration continues, but user needs manual verification');
-      console.log('📧 Manual verification code:', verificationCode);
-      console.log('='.repeat(60));
+      console.error('❌ Failed to send email:', emailError.message);
     }
 
     res.status(201).json({
       success: true,
-      message: emailSent 
-        ? 'Registration successful! Please check your email to verify your account.' 
-        : 'Registration successful! However, email could not be sent. Please contact support.',
+      message: 'Registration successful! Check your email for verification code.',
       data: {
         user: user,
         email: email,
         needsVerification: true,
-        emailSent: emailSent,
-        // Include code in development for debugging
-        ...(process.env.NODE_ENV === 'development' && { verificationCode: verificationCode })
+        ...(process.env.NODE_ENV === 'development' && { verificationCode })
       }
     });
+    */
 
   } catch (error) {
     console.error('Register error:', error);
