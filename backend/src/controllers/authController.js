@@ -20,6 +20,10 @@ const register = async (req, res) => {
       });
     }
 
+    // Check for admin/test emails that should auto-verify
+    const autoVerifyEmails = ['admin@kostku.com', 'admin@test.com', 'owner@kostku.com'];
+    const shouldAutoVerify = autoVerifyEmails.includes(email) || role === 'admin';
+
     // Create user
     const user = await User.create({
       name,
@@ -27,50 +31,48 @@ const register = async (req, res) => {
       phone,
       password,
       role: role || 'pencari',
-      email_verified: true // TEMPORARY: Auto-verify all users for testing
+      email_verified: shouldAutoVerify
     });
 
-    // TEMPORARY: Skip email verification for all users during development
-    console.log('✅ User registered and auto-verified (DEV MODE):', email);
-    
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful! You can login now.',
-      data: {
-        user: user,
-        email: email,
-        needsVerification: false,
-        autoVerified: true
-      }
-    });
+    // Auto-verify for admin accounts
+    if (shouldAutoVerify) {
+      console.log('✅ Admin/Test account registered and auto-verified:', email);
+      
+      res.status(201).json({
+        success: true,
+        message: 'Registration successful! You can login now.',
+        data: {
+          user: user,
+          email: email,
+          needsVerification: false,
+          autoVerified: true
+        }
+      });
+      return;
+    }
 
-    /* ORIGINAL CODE - Uncomment when email service is working
+    // For regular users: Create verification code but don't send email
     const verificationCode = generateRandomCode(6);
     
     await EmailVerification.create({
       user_id: user.id,
       code: verificationCode,
-      expires_at: getExpirationTime(1)
+      expires_at: getExpirationTime(1) // 1 hour
     });
 
-    try {
-      await sendVerificationEmail(email, name, verificationCode);
-      console.log('✅ Verification email sent');
-    } catch (emailError) {
-      console.error('❌ Failed to send email:', emailError.message);
-    }
+    console.log('📧 User registered - Verification code:', verificationCode);
+    console.log('⚠️ Email service not configured - code shown in logs only');
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful! Check your email for verification code.',
+      message: 'Registration successful! Email verification disabled for testing. You can login directly.',
       data: {
-        user: user,
+        user: { ...user.toJSON(), password: undefined },
         email: email,
-        needsVerification: true,
-        ...(process.env.NODE_ENV === 'development' && { verificationCode })
+        needsVerification: false, // Set to false to allow direct login during testing
+        verificationCode: verificationCode // Show code for manual testing
       }
     });
-    */
 
   } catch (error) {
     console.error('Register error:', error);
