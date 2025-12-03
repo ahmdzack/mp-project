@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 400px;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    h1 {
+      color: #333;
+      margin: 0 0 0.5rem;
+    }
+    p {
+      color: #666;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h1>Mengalihkan...</h1>
+    <p>Mohon tunggu, Anda sedang dialihkan ke halaman pembayaran</p>
+  </div>
+
+  <script>
+    // Get current URL parameters
+    const currentURL = new URL(window.location.href);
+    const params = currentURL.searchParams;
+    
+    // Extract booking ID from path
+    const pathParts = currentURL.pathname.split('/');
+    const bookingIndex = pathParts.indexOf('bookings');
+    const bookingId = bookingIndex !== -1 ? pathParts[bookingIndex + 1] : null;
+    
+    // Determine status from path
+    let status = 'success';
+    if (currentURL.pathname.includes('/error')) {
+      status = 'error';
+    } else if (currentURL.pathname.includes('/pending')) {
+      status = 'pending';
+    }
+    
+    // Build new URL with correct port
+    const newPort = '5174'; // Your frontend port
+    const newURL = `http://localhost:${newPort}/bookings/${bookingId}/payment/${status}${currentURL.search}`;
+    
+    console.log('Redirecting from:', currentURL.href);
+    console.log('Redirecting to:', newURL);
+    
+    // Redirect after 1 second
+    setTimeout(() => {
+      window.location.replace(newURL);
+    }, 1000);
+  </script>
+</body>
+</html>
