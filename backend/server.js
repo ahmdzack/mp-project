@@ -54,8 +54,7 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Kost Reservation API is running',
-    version: '1.0.0',
-    week: '2'
+    version: '1.0.0'
   });
 });
 
@@ -83,5 +82,4 @@ if (isNaN(PORT) || PORT < 0 || PORT > 65535) {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📚 Week 2: Kost Management Active`);
 });
