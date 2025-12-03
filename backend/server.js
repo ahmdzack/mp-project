@@ -18,10 +18,16 @@ app.use(express.urlencoded({ extended: true }));
 // Test database connection
 testConnection();
 
-// Sync database - IMPORTANT: set to false in production!
-sequelize.sync({ alter: false, force: false })  // ← Changed from alter: false
+// Sync database - auto-create tables in production with alter
+const syncOptions = {
+  alter: process.env.NODE_ENV === 'production' ? true : false,
+  force: false
+};
+
+sequelize.sync(syncOptions)
   .then(() => {
-    console.log('✅ Database synced');
+    console.log('✅ Database synced successfully');
+    console.log(`📊 Sync mode: ${process.env.NODE_ENV === 'production' ? 'ALTER (production)' : 'NORMAL (development)'}`);
   })
   .catch(err => {
     console.error('❌ Database sync error:', err);
