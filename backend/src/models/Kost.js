@@ -43,11 +43,28 @@ module.exports = (sequelize) => {
       type: DataTypes.DECIMAL(11, 8),
       allowNull: true
     },
+    price_weekly: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      get() {
+        const value = this.getDataValue('price_weekly');
+        return value ? parseFloat(value) : null;
+      }
+    },
     price_monthly: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-      validate: {
-        min: { args: [0], msg: 'Price must be positive' }
+      get() {
+        const value = this.getDataValue('price_monthly');
+        return value ? parseFloat(value) : 0;
+      }
+    },
+    price_yearly: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      get() {
+        const value = this.getDataValue('price_yearly');
+        return value ? parseFloat(value) : null;
       }
     },
     total_rooms: {

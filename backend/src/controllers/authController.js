@@ -26,29 +26,71 @@ const register = async (req, res) => {
       email,
       phone,
       password,
-      role: role || 'pencari'
+      role: role || 'pencari',
+      email_verified: (role === 'superadmin' || email === 'admin@kostku.com' || email === 'admin@test.com') ? true : false // Auto-verify superadmin and specific admin emails
     });
 
-    // Generate email verification token
-    const verificationToken = generateRandomToken();
+    // Skip email verification for superadmin or specific admin emails
+    if (role === 'superadmin' || email === 'admin@kostku.com' || email === 'admin@test.com') {
+      console.log('✅ Admin account registered and auto-verified:', email);
+      
+      res.status(201).json({
+        success: true,
+        message: 'Admin registration successful! You can login now.',
+        data: {
+          user: user,
+          email: email,
+          needsVerification: false,
+          autoVerified: true
+        }
+      });
+      return;
+    }
+
+    // Generate email verification code for regular users (6-digit)
+    const verificationCode = generateRandomCode(6);
+    
     await EmailVerification.create({
       user_id: user.id,
-      token: verificationToken,
+      code: verificationCode,
       expires_at: getExpirationTime(1) // 1 hour
     });
 
-    // Send verification email
-    await sendVerificationEmail(email, name, verificationToken);
-
-    // Generate JWT token
-    const token = generateToken(user.id, user.role);
+    // Send verification email with code (don't block registration if email fails)
+    let emailSent = false;
+    try {
+      console.log('📤 Attempting to send verification email to:', email);
+      console.log('📧 Generated verification code:', verificationCode);
+      
+      await sendVerificationEmail(email, name, verificationCode);
+      
+      emailSent = true;
+      console.log('✅ ✅ ✅ VERIFICATION EMAIL SENT SUCCESSFULLY! ✅ ✅ ✅');
+      console.log('📧 To:', email);
+      console.log('🔢 Code:', verificationCode);
+      console.log('⏰ Expires in: 1 hour');
+      console.log('='.repeat(60));
+    } catch (emailError) {
+      console.error('❌ ❌ ❌ FAILED TO SEND EMAIL! ❌ ❌ ❌');
+      console.error('Error:', emailError.message);
+      console.error('Stack:', emailError.stack);
+      console.log('⚠️ Registration continues, but user needs manual verification');
+      console.log('📧 Manual verification code:', verificationCode);
+      console.log('='.repeat(60));
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful. Please check your email for verification.',
+      message: emailSent 
+        ? 'Registration successful! Please check your email to verify your account.' 
+        : 'Registration successful! However, email could not be sent. Please contact support.',
       data: {
         user: user,
-        token: token
+        email: email,
+        needsVerification: true,
+        emailSent: emailSent,
+        // Include code in development for debugging
+        ...(process.env.NODE_ENV === 'development' && { verificationCode: verificationCode })
       }
     });
 
@@ -73,7 +115,7 @@ const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Email belum terdaftar. Silakan daftar terlebih dahulu.'
       });
     }
 
@@ -83,6 +125,20 @@ const login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
+      });
+    }
+
+    // Check if email is verified (skip for superadmin and specific admin emails)
+    if (!user.email_verified && user.role !== 'superadmin' && user.email !== 'admin@kostku.com' && user.email !== 'admin@test.com') {
+      console.log('⚠️ Login blocked - Email not verified');
+      console.log('📧 Email:', user.email);
+      console.log('💡 User needs to check email for verification code');
+      
+      return res.status(403).json({
+        success: false,
+        message: 'Please verify your email before logging in. Check your inbox for the verification code.',
+        needsVerification: true,
+        email: user.email
       });
     }
 
@@ -107,49 +163,60 @@ const login = async (req, res) => {
   }
 };
 
-// @desc    Verify email
-// @route   GET /api/auth/verify-email?token=xxx
+// @desc    Verify email with code
+// @route   POST /api/auth/verify-email
 // @access  Public
 const verifyEmail = async (req, res) => {
   try {
-    const { token } = req.query;
+    const { email, code } = req.body;
 
-    if (!token) {
+    if (!email || !code) {
       return res.status(400).json({
         success: false,
-        message: 'Verification token is required'
+        message: 'Email and verification code are required'
+      });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
     // Find verification record
     const verification = await EmailVerification.findOne({
-      where: { token },
-      include: [{ model: User }]
+      where: { 
+        user_id: user.id,
+        code: code
+      }
     });
 
     if (!verification) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired verification token'
+        message: 'Invalid verification code'
       });
     }
 
-    // Check if token expired
+    // Check if code expired
     if (new Date() > verification.expires_at) {
       return res.status(400).json({
         success: false,
-        message: 'Verification token has expired'
+        message: 'Verification code has expired'
       });
     }
 
     // Update user email_verified status
     await User.update(
       { email_verified: true },
-      { where: { id: verification.user_id } }
+      { where: { id: user.id } }
     );
 
     // Delete verification record
-    await EmailVerification.destroy({ where: { token } });
+    await EmailVerification.destroy({ where: { id: verification.id } });
 
     res.status(200).json({
       success: true,
@@ -167,10 +234,27 @@ const verifyEmail = async (req, res) => {
 
 // @desc    Resend verification email
 // @route   POST /api/auth/resend-verification
-// @access  Private
+// @access  Public (email in body)
 const resendVerification = async (req, res) => {
   try {
-    const user = req.user;
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ where: { email } });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     // Check if already verified
     if (user.email_verified) {
@@ -180,23 +264,44 @@ const resendVerification = async (req, res) => {
       });
     }
 
-    // Delete old verification tokens
+    // Delete old verification codes
     await EmailVerification.destroy({ where: { user_id: user.id } });
 
-    // Generate new token
-    const verificationToken = generateRandomToken();
+    // Generate new code
+    const verificationCode = generateRandomCode(6);
     await EmailVerification.create({
       user_id: user.id,
-      token: verificationToken,
+      code: verificationCode,
       expires_at: getExpirationTime(1)
     });
 
-    // Send email
-    await sendVerificationEmail(user.email, user.name, verificationToken);
+    // Send email with detailed logging
+    let emailSent = false;
+    try {
+      console.log('📤 RESENDING verification email to:', email);
+      console.log('🔢 New verification code:', verificationCode);
+      
+      await sendVerificationEmail(email, user.name, verificationCode);
+      
+      emailSent = true;
+      console.log('✅ ✅ ✅ VERIFICATION EMAIL RESENT SUCCESSFULLY! ✅ ✅ ✅');
+      console.log('📧 To:', email);
+      console.log('🔢 Code:', verificationCode);
+      console.log('⏰ Expires in: 1 hour');
+      console.log('='.repeat(60));
+    } catch (emailError) {
+      console.error('❌ Failed to resend email:', emailError.message);
+      console.log('📧 Manual verification code:', verificationCode);
+    }
 
     res.status(200).json({
       success: true,
-      message: 'Verification email sent successfully'
+      message: emailSent 
+        ? 'Verification email resent successfully. Check your inbox!' 
+        : 'Verification code generated, but email failed to send.',
+      emailSent: emailSent,
+      // Include code in development for debugging
+      ...(process.env.NODE_ENV === 'development' && { verificationCode: verificationCode })
     });
 
   } catch (error) {
@@ -354,12 +459,77 @@ const verifyPhone = async (req, res) => {
   }
 };
 
+// @desc    Check verification status for an email
+// @route   POST /api/auth/check-verification
+// @access  Public
+const checkVerificationStatus = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ where: { email } });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check for pending verification
+    const pendingVerification = await EmailVerification.findOne({
+      where: { user_id: user.id }
+    });
+
+    const hasExpired = pendingVerification && new Date() > pendingVerification.expires_at;
+
+    console.log('📊 Verification Status Check:');
+    console.log('📧 Email:', email);
+    console.log('✅ Verified:', user.email_verified);
+    console.log('⏳ Pending verification:', !!pendingVerification);
+    if (pendingVerification) {
+      console.log('🔢 Code exists:', !!pendingVerification.code);
+      console.log('⏰ Expired:', hasExpired);
+      console.log('🔢 Code (dev only):', process.env.NODE_ENV === 'development' ? pendingVerification.code : '***');
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        email: email,
+        isVerified: user.email_verified,
+        hasPendingVerification: !!pendingVerification,
+        verificationExpired: hasExpired,
+        // Include code in development for debugging
+        ...(process.env.NODE_ENV === 'development' && pendingVerification && { 
+          verificationCode: pendingVerification.code 
+        })
+      }
+    });
+
+  } catch (error) {
+    console.error('Check verification status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 // Export all functions
 module.exports = {
   register,
   login,
   verifyEmail,
   resendVerification,
+  checkVerificationStatus,
   getMe,
   sendPhoneVerification,
   verifyPhone

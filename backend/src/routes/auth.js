@@ -5,6 +5,7 @@ const {
   login,
   verifyEmail,
   resendVerification,
+  checkVerificationStatus,
   getMe,
   sendPhoneVerification,
   verifyPhone
@@ -16,10 +17,11 @@ const { protect } = require('../middlewares/auth');
 // Public routes
 router.post('/register', registerValidator, handleValidationErrors, register);
 router.post('/login', loginValidator, handleValidationErrors, login);
-router.get('/verify-email', verifyEmail);
+router.post('/verify-email', verifyEmail); // Changed from GET to POST
+router.post('/resend-verification', resendVerification); // Now public, accepts email in body
+router.post('/check-verification', checkVerificationStatus); // New endpoint
 
 // Protected routes
-router.post('/resend-verification', protect, resendVerification);
 router.get('/me', protect, getMe);
 
 // Phone verification routes

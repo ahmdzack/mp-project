@@ -1,5 +1,6 @@
 const { Kost, Category, KostType, Facility, KostImage, User } = require('../models');
 const { Op } = require('sequelize');
+const { sendKostApprovalEmail } = require('../services/emailService');
 
 // @desc    Create new kost
 // @route   POST /api/kost
@@ -173,6 +174,8 @@ const getAllKost = async (req, res) => {
     const kostsWithPrimaryImage = rows.map(kost => {
       const kostJSON = kost.toJSON();
       kostJSON.primary_image = kostJSON.images?.find(img => img.is_primary)?.image_url || null;
+      // Normalize facilities to Facilities for frontend consistency
+      kostJSON.Facilities = kostJSON.facilities;
       return kostJSON;
     });
 
@@ -201,11 +204,14 @@ const getKostById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    console.log('🔍 Fetching kost detail for ID:', id);
+    console.log('👤 User requesting:', req.user ? `${req.user.role} (ID: ${req.user.id})` : 'Not authenticated');
+
     const kost = await Kost.findByPk(id, {
       include: [
-        { model: Category, as: 'Category', attributes: ['id', 'name'] },
-        { model: KostType, as: 'KostType', attributes: ['id', 'name'] },
-        { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] },
+        { model: Category, as: 'Category', attributes: ['id', 'name'], required: false },
+        { model: KostType, as: 'KostType', attributes: ['id', 'name'], required: false },
+        { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'], through: { attributes: [] }, required: false },
         { 
           model: KostImage, 
           as: 'images', 
@@ -213,48 +219,60 @@ const getKostById = async (req, res) => {
           separate: true,
           order: [['is_primary', 'DESC'], ['created_at', 'ASC']]
         },
-        { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'phone'] },
-        { model: User, as: 'approver', attributes: ['id', 'name'] }
+        { model: User, as: 'owner', attributes: ['id', 'name', 'email', 'phone'], required: false }
       ]
     });
 
     if (!kost) {
+      console.log('❌ Kost not found');
       return res.status(404).json({
         success: false,
         message: 'Kost not found'
       });
     }
 
-    // Check access
+    console.log('✅ Kost found:', kost.name);
+    console.log('📊 Is approved:', kost.is_approved);
+    console.log('👤 Owner ID:', kost.owner_id);
+
+    // Check access - Allow admin to view pending kosts
     if (!kost.is_approved) {
       if (!req.user) {
+        console.log('❌ Access denied: Not authenticated');
         return res.status(403).json({
           success: false,
           message: 'This kost is not approved yet'
         });
       }
+      // Allow admin or owner to view
       if (req.user.role !== 'admin' && req.user.id !== kost.owner_id) {
+        console.log('❌ Access denied: Not admin or owner');
         return res.status(403).json({
           success: false,
           message: 'This kost is not approved yet'
         });
       }
+      console.log('✅ Access granted:', req.user.role === 'admin' ? 'Admin' : 'Owner');
     }
 
     // Add primary_image field
     const kostJSON = kost.toJSON();
     kostJSON.primary_image = kostJSON.images?.find(img => img.is_primary)?.image_url || null;
 
+    console.log('✅ Returning kost data');
     res.status(200).json({
       success: true,
       data: kostJSON
     });
 
   } catch (error) {
-    console.error('Get kost error:', error);
+    console.error('❌ Get kost error:', error);
+    console.error('Error details:', error.message);
+    console.error('Stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -402,7 +420,15 @@ const deleteKost = async (req, res) => {
 const approveKost = async (req, res) => {
   try {
     const { id } = req.params;
-    const kost = await Kost.findByPk(id);
+    const kost = await Kost.findByPk(id, {
+      include: [
+        {
+          model: User,
+          as: 'owner',
+          attributes: ['id', 'name', 'email']
+        }
+      ]
+    });
 
     if (!kost) {
       return res.status(404).json({
@@ -424,6 +450,25 @@ const approveKost = async (req, res) => {
       approved_at: new Date()
     });
 
+    // Send approval email to owner
+    try {
+      console.log('📧 Sending kost approval email...');
+      console.log('Owner:', kost.owner.name, '|', kost.owner.email);
+      console.log('Kost:', kost.name, '| ID:', kost.id);
+      
+      await sendKostApprovalEmail(
+        kost.owner.email,
+        kost.owner.name,
+        kost.name,
+        kost.id
+      );
+      
+      console.log('✅ Kost approval email sent successfully!');
+    } catch (emailError) {
+      console.error('❌ Failed to send approval email:', emailError.message);
+      // Don't fail the approval if email fails
+    }
+
     res.status(200).json({
       success: true,
       message: 'Kost approved successfully',
@@ -439,11 +484,85 @@ const approveKost = async (req, res) => {
   }
 };
 
+// @desc    Update available rooms
+// @route   PATCH /api/kost/:id/rooms
+// @access  Private (pemilik - owner only)
+const updateAvailableRooms = async (req, res) => {
+  try {
+    const { action } = req.body; // 'increment' or 'decrement'
+    const kostId = req.params.id;
+
+    // Find kost
+    const kost = await Kost.findByPk(kostId);
+
+    if (!kost) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kost tidak ditemukan'
+      });
+    }
+
+    // Check ownership
+    if (kost.owner_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Anda tidak memiliki akses untuk mengubah kost ini'
+      });
+    }
+
+    // Update available rooms
+    if (action === 'increment') {
+      // Tidak boleh melebihi total_rooms
+      if (kost.available_rooms >= kost.total_rooms) {
+        return res.status(400).json({
+          success: false,
+          message: `Kamar tersedia tidak boleh melebihi total kamar (${kost.total_rooms})`
+        });
+      }
+      kost.available_rooms += 1;
+    } else if (action === 'decrement') {
+      // Tidak boleh kurang dari 0
+      if (kost.available_rooms <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Kamar tersedia sudah 0, tidak bisa dikurangi lagi'
+        });
+      }
+      kost.available_rooms -= 1;
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Action harus "increment" atau "decrement"'
+      });
+    }
+
+    await kost.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Kamar tersedia berhasil ${action === 'increment' ? 'ditambah' : 'dikurangi'}`,
+      data: {
+        id: kost.id,
+        available_rooms: kost.available_rooms,
+        total_rooms: kost.total_rooms
+      }
+    });
+
+  } catch (error) {
+    console.error('Update available rooms error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   createKost,
   getAllKost,
   getKostById,
   updateKost,
   deleteKost,
-  approveKost
+  approveKost,
+  updateAvailableRooms
 };
