@@ -6,21 +6,24 @@ const {
   getKostById,
   updateKost,
   deleteKost,
-  approveKost
+  approveKost,
+  updateAvailableRooms
 } = require('../controllers/kostController');
 const { createKostValidator, updateKostValidator } = require('../validators/kostValidator');
 const { handleValidationErrors } = require('../middlewares/errorHandler');
-const { protect } = require('../middlewares/auth');
+const { protect, optionalAuth } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/validateRole');
+const { checkEmailVerified } = require('../middlewares/checkVerified');
 
 // Public routes
 router.get('/', getAllKost);
-router.get('/:id', getKostById);
+router.get('/:id', optionalAuth, getKostById);
 
 // Protected routes (Pemilik)
 router.post(
   '/',
   protect,
+  checkEmailVerified,
   authorize('pemilik', 'admin'),
   createKostValidator,
   handleValidationErrors,
@@ -41,6 +44,14 @@ router.delete(
   protect,
   authorize('pemilik', 'admin'),
   deleteKost
+);
+
+// Owner routes - Update available rooms
+router.patch(
+  '/:id/rooms',
+  protect,
+  authorize('pemilik'),
+  updateAvailableRooms
 );
 
 // Admin routes

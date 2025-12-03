@@ -12,6 +12,9 @@ const KostTypeModel = require('./KostType');
 const FacilityModel = require('./Facility');
 const KostModel = require('./Kost');
 const KostImageModel = require('./KostImage');
+// Week 4: Booking & Payment
+const Booking = require('./Booking');
+const Payment = require('./Payment');
 
 // ============================================
 // INITIALIZE MODELS (Create instances)
@@ -116,6 +119,41 @@ Facility.belongsToMany(Kost, {
   timestamps: false
 });
 
+// Week 4: Booking & Payment Associations
+
+// User - Booking
+User.hasMany(Booking, {
+  foreignKey: 'user_id',
+  as: 'bookings',
+  onDelete: 'CASCADE'
+});
+Booking.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user'
+});
+
+// Kost - Booking
+Kost.hasMany(Booking, {
+  foreignKey: 'kost_id',
+  as: 'bookings',
+  onDelete: 'CASCADE'
+});
+Booking.belongsTo(Kost, {
+  foreignKey: 'kost_id',
+  as: 'kost'
+});
+
+// Booking - Payment
+Booking.hasOne(Payment, {
+  foreignKey: 'booking_id',
+  as: 'payment',
+  onDelete: 'CASCADE'
+});
+Payment.belongsTo(Booking, {
+  foreignKey: 'booking_id',
+  as: 'booking'
+});
+
 // ============================================
 // EXPORT INITIALIZED MODELS
 // ============================================
@@ -129,5 +167,7 @@ module.exports = {
   KostType,
   Facility,
   Kost,
-  KostImage
+  KostImage,
+  Booking,
+  Payment
 };
