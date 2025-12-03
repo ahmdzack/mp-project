@@ -27,9 +27,25 @@ const register = async (req, res) => {
       phone,
       password,
       role: role || 'pencari',
-      email_verified: (role === 'superadmin' || email === 'admin@kostku.com' || email === 'admin@test.com') ? true : false // Auto-verify superadmin and specific admin emails
+      email_verified: true // TEMPORARY: Auto-verify all users for testing
     });
 
+    // TEMPORARY: Skip email verification for all users during development
+    console.log('✅ User registered and auto-verified (DEV MODE):', email);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Registration successful! You can login now.',
+      data: {
+        user: user,
+        email: email,
+        needsVerification: false,
+        autoVerified: true
+      }
+    });
+    return;
+
+    /* ORIGINAL CODE - Uncomment when email service is working
     // Skip email verification for superadmin or specific admin emails
     if (role === 'superadmin' || email === 'admin@kostku.com' || email === 'admin@test.com') {
       console.log('✅ Admin account registered and auto-verified:', email);
