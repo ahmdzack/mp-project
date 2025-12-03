@@ -51,7 +51,7 @@ const register = async (req, res) => {
       return;
     }
 
-    // For regular users: Create verification code but don't send email
+    // For regular users: Create verification code and send email
     const verificationCode = generateRandomCode(6);
     
     await EmailVerification.create({
@@ -60,17 +60,32 @@ const register = async (req, res) => {
       expires_at: getExpirationTime(1) // 1 hour
     });
 
-    console.log('📧 User registered - Verification code:', verificationCode);
-    console.log('⚠️ Email service not configured - code shown in logs only');
+    console.log('📧 Sending verification email to:', email);
+    console.log('🔢 Verification code:', verificationCode);
+
+    // Try to send verification email
+    let emailSent = false;
+    try {
+      await sendVerificationEmail(email, name, verificationCode);
+      emailSent = true;
+      console.log('✅ Verification email sent successfully');
+    } catch (emailError) {
+      console.error('❌ Failed to send email:', emailError.message);
+      // Continue registration even if email fails
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful! Email verification disabled for testing. You can login directly.',
+      message: emailSent 
+        ? 'Registration successful! Please check your email for verification code.'
+        : 'Registration successful! Email service temporarily unavailable. Use code below.',
       data: {
         user: { ...user.toJSON(), password: undefined },
         email: email,
-        needsVerification: false, // Set to false to allow direct login during testing
-        verificationCode: verificationCode // Show code for manual testing
+        needsVerification: true,
+        emailSent: emailSent,
+        // Show code only if email failed to send
+        ...(!emailSent && { verificationCode: verificationCode })
       }
     });
 
@@ -108,19 +123,23 @@ const login = async (req, res) => {
       });
     }
 
-    // Check if email is verified (skip for superadmin and specific admin emails)
-    if (!user.email_verified && user.role !== 'superadmin' && user.email !== 'admin@kostku.com' && user.email !== 'admin@test.com') {
+    // Check if email is verified (skip for admin emails only)
+    const autoVerifyEmails = ['admin@kostku.com', 'admin@test.com', 'owner@kostku.com'];
+    const isAdminEmail = autoVerifyEmails.includes(user.email) || user.role === 'admin';
+    
+    if (!user.email_verified && !isAdminEmail) {
       console.log('⚠️ Login blocked - Email not verified');
       console.log('📧 Email:', user.email);
-      console.log('💡 User needs to check email for verification code');
       
       return res.status(403).json({
         success: false,
-        message: 'Please verify your email before logging in. Check your inbox for the verification code.',
+        message: 'Please verify your email before logging in.',
         needsVerification: true,
         email: user.email
       });
     }
+
+    console.log('✅ Login successful for:', user.email, '(role:', user.role, ', verified:', user.email_verified, ')');
 
     // Generate token
     const token = generateToken(user.id, user.role);
@@ -255,33 +274,31 @@ const resendVerification = async (req, res) => {
       expires_at: getExpirationTime(1)
     });
 
-    // Send email with detailed logging
+    console.log('📤 Attempting to resend verification email to:', email);
+    console.log('🔢 New verification code:', verificationCode);
+
+    // Try to send verification email
     let emailSent = false;
     try {
-      console.log('📤 RESENDING verification email to:', email);
-      console.log('🔢 New verification code:', verificationCode);
-      
       await sendVerificationEmail(email, user.name, verificationCode);
-      
       emailSent = true;
-      console.log('✅ ✅ ✅ VERIFICATION EMAIL RESENT SUCCESSFULLY! ✅ ✅ ✅');
-      console.log('📧 To:', email);
-      console.log('🔢 Code:', verificationCode);
-      console.log('⏰ Expires in: 1 hour');
-      console.log('='.repeat(60));
+      console.log('✅ Verification email resent successfully');
     } catch (emailError) {
       console.error('❌ Failed to resend email:', emailError.message);
-      console.log('📧 Manual verification code:', verificationCode);
     }
 
     res.status(200).json({
       success: true,
-      message: emailSent 
-        ? 'Verification email resent successfully. Check your inbox!' 
-        : 'Verification code generated, but email failed to send.',
-      emailSent: emailSent,
-      // Include code in development for debugging
-      ...(process.env.NODE_ENV === 'development' && { verificationCode: verificationCode })
+      message: emailSent
+        ? 'Verification code resent! Please check your email.'
+        : 'New verification code generated! Email service unavailable, use code below.',
+      data: {
+        email: email,
+        emailSent: emailSent,
+        expiresIn: '1 hour',
+        // Show code only if email failed to send
+        ...(!emailSent && { verificationCode: verificationCode })
+      }
     });
 
   } catch (error) {
