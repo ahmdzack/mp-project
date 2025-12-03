@@ -98,7 +98,7 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         
         {/* Form State */}
@@ -211,9 +211,6 @@ const VerifyEmail = () => {
                   </>
                 )}
               </button>
-              <p className="text-xs text-gray-500 mt-2">
-                Check console browser (F12) untuk melihat kode di development mode
-              </p>
             </div>
           </div>
         )}

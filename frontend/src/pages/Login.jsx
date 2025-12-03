@@ -108,7 +108,7 @@ function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-4 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
@@ -173,10 +173,6 @@ function Login() {
                       Verifikasi sekarang
                     </Link>
                   </div>
-                  
-                  <p className="text-xs text-gray-600 mt-1">
-                    💡 Cek console browser (F12) untuk melihat kode di development mode
-                  </p>
                 </div>
               </AlertDescription>
             </Alert>
