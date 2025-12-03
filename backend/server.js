@@ -71,9 +71,17 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+
+// Validate PORT
+if (isNaN(PORT) || PORT < 0 || PORT > 65535) {
+  console.error('❌ Invalid PORT value:', process.env.PORT);
+  console.error('💡 PORT must be a number between 0 and 65535');
+  process.exit(1);
+}
+
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📚 Week 2: Kost Management Active`);
 });
