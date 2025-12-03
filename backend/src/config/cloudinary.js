@@ -12,11 +12,18 @@ cloudinary.config({
 // Test connection
 const testCloudinaryConnection = async () => {
   try {
+    // Check if Cloudinary credentials are set
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.warn('⚠️ Cloudinary credentials not set. Image upload will not work.');
+      return false;
+    }
+    
     const result = await cloudinary.api.ping();
     console.log('✅ Cloudinary connected:', result.status);
     return true;
   } catch (error) {
     console.error('❌ Cloudinary connection failed:', error.message);
+    console.error('💡 Hint: Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in Railway');
     return false;
   }
 };

@@ -47,10 +47,17 @@ if (process.env.DATABASE_URL) {
 // Test connection
 const testConnection = async () => {
   try {
+    // Check if DATABASE_URL is set in production
+    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL is not set. Please add MySQL service and set DATABASE_URL variable in Railway.');
+    }
+    
     await sequelize.authenticate();
     console.log('✅ Database connected successfully');
+    console.log(`📊 Connection: ${process.env.DATABASE_URL ? 'Railway MySQL' : 'Local MySQL'}`);
   } catch (error) {
     console.error('❌ Unable to connect to database:', error.message);
+    console.error('💡 Hint: Make sure DATABASE_URL is set to ${{MySQL.DATABASE_URL}} in Railway variables');
     process.exit(1);
   }
 };
