@@ -32,6 +32,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.15.3",
     "nodemailer": "^7.0.10",
+    "resend": "^6.5.2",
     "sequelize": "^6.37.7",
     "uuid": "^13.0.0"
   },
