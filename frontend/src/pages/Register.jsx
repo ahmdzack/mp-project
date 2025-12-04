@@ -18,6 +18,7 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -49,32 +50,44 @@ function Register() {
       const { confirmPassword, ...registerData } = formData;
       const response = await register(registerData);
       
-      // Check if superadmin (auto-verified)
-      if (response.data.autoVerified) {
-        // Superadmin doesn't need verification, redirect to login
+      console.log('📦 Register response:', response);
+      
+      // Backend response structure: { success, message, data: { user, email, needsVerification, emailSent, verificationCode } }
+      const { data } = response;
+      
+      // Check if superadmin (auto-verified) - no verification needed
+      if (data && data.user && data.user.email_verified) {
         navigate('/login', { 
           state: { 
             message: 'Admin registration successful! You can login now.',
-            email: response.data.email 
+            email: data.email || data.user.email
           } 
         });
         return;
       }
       
       // Regular users need verification
-      if (response.data.needsVerification) {
+      if (data && data.needsVerification) {
         setSuccess(true);
-        setRegisteredEmail(response.data.email);
+        setRegisteredEmail(data.email);
         
-        // Show verification code if in development mode
-        if (response.data.verificationCode) {
-          console.log('🔢 VERIFICATION CODE:', response.data.verificationCode);
+        // Show verification code if email service failed
+        if (data.verificationCode) {
+          setVerificationCode(data.verificationCode);
+          console.log('🔢 VERIFICATION CODE:', data.verificationCode);
         }
+        
+        // Auto-redirect to verify page after 2 seconds
+        setTimeout(() => {
+          navigate('/verify-email', { state: { email: data.email } });
+        }, 2000);
       } else {
-        // Fallback
+        // Fallback - shouldn't happen
+        console.warn('⚠️ Unexpected response structure:', response);
         navigate('/');
       }
     } catch (err) {
+      console.error('❌ Register error:', err);
       setError(err.response?.data?.message || 'Registrasi gagal. Silakan coba lagi.');
     } finally {
       setLoading(false);
@@ -101,50 +114,52 @@ function Register() {
             <div className="space-y-4">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-green-900 mb-1">
-                      Email Verifikasi Telah Dikirim!
+                      Registrasi Berhasil!
                     </p>
                     <p className="text-sm text-green-700">
-                      Kami telah mengirim link verifikasi ke <strong>{registeredEmail}</strong>
+                      Akun untuk <strong>{registeredEmail}</strong> telah dibuat.
                     </p>
                   </div>
                 </div>
               </div>
+
+              {verificationCode && (
+                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                  <p className="text-sm font-medium text-yellow-900 mb-2">
+                    ⚠️ Email Service Belum Dikonfigurasi
+                  </p>
+                  <p className="text-sm text-yellow-800 mb-3">
+                    Gunakan kode verifikasi di bawah ini:
+                  </p>
+                  <div className="bg-white border-2 border-yellow-400 rounded-lg p-4 text-center">
+                    <p className="text-xs text-gray-600 mb-1">Kode Verifikasi Anda:</p>
+                    <p className="text-3xl font-bold text-gray-900 tracking-widest">
+                      {verificationCode}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">Berlaku selama 1 jam</p>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900 font-medium mb-2">
                   Langkah Selanjutnya:
                 </p>
                 <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                  <li>Buka inbox email Anda</li>
-                  <li>Cari email dari Kost Reservation</li>
-                  <li>Salin kode verifikasi 6 digit</li>
-                  <li>Masukkan kode di halaman verifikasi</li>
-                  <li>Login setelah email terverifikasi</li>
+                  <li>Klik tombol "Verifikasi Email Sekarang"</li>
+                  <li>Masukkan kode verifikasi di atas</li>
+                  <li>Login setelah verifikasi berhasil</li>
                 </ol>
               </div>
-
-              <Alert>
-                <AlertDescription className="text-sm">
-                  <strong>Tidak menerima email?</strong> Cek folder spam atau tunggu beberapa menit. Kode berlaku 1 jam.
-                </AlertDescription>
-              </Alert>
 
               <Button 
                 onClick={() => navigate('/verify-email', { state: { email: registeredEmail } })} 
                 className="w-full"
               >
                 Verifikasi Email Sekarang
-              </Button>
-              
-              <Button 
-                onClick={() => navigate('/login')} 
-                variant="outline"
-                className="w-full"
-              >
-                Verifikasi Nanti (Ke Login)
               </Button>
             </div>
           ) : (
