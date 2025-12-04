@@ -1,12 +1,22 @@
 const { Resend } = require('resend');
 require('dotenv').config();
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend with API key (if available)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Send email verification using Resend
 const sendVerificationEmail = async (email, name, code) => {
   const verificationPageUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email`;
+  
+  // Fallback: Log to console if Resend not configured
+  if (!resend) {
+    console.log('⚠️  RESEND_API_KEY not set - logging verification code instead:');
+    console.log('📧 Email:', email);
+    console.log('👤 Name:', name);
+    console.log('🔢 Verification Code:', code);
+    console.log('💡 Set RESEND_API_KEY environment variable to send real emails');
+    return { id: 'console-log', code }; // Return code for development
+  }
   
   try {
     const { data, error } = await resend.emails.send({
@@ -55,6 +65,16 @@ const sendVerificationEmail = async (email, name, code) => {
 
 // Send kost approval email
 const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
+  // Fallback: Log to console if Resend not configured
+  if (!resend) {
+    console.log('⚠️  RESEND_API_KEY not set - logging approval email instead:');
+    console.log('📧 Email:', ownerEmail);
+    console.log('👤 Owner:', ownerName);
+    console.log('🏠 Kost:', kostName);
+    console.log('💡 Set RESEND_API_KEY environment variable to send real emails');
+    return { id: 'console-log' };
+  }
+  
   try {
     const { data, error } = await resend.emails.send({
       from: process.env.EMAIL_FROM || 'KostKu <onboarding@resend.dev>',
