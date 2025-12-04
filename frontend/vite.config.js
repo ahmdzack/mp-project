@@ -3,9 +3,11 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // Load env file based on `mode` in the current working directory.
-  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
-  const env = loadEnv(mode, process.cwd(), '')
+  // Load env file from current directory (frontend/)
+  const env = loadEnv(mode, '.', '')
+  
+  console.log('🔧 Vite Build Mode:', mode);
+  console.log('🔗 VITE_API_URL:', env.VITE_API_URL);
   
   return {
     plugins: [react()],
@@ -14,10 +16,16 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       host: true
     },
-    // Expose env variables to the app
+    // Force production API URL if building for production
     define: {
-      'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || 'http://localhost:5000'),
-      'import.meta.env.VITE_MIDTRANS_CLIENT_KEY': JSON.stringify(env.VITE_MIDTRANS_CLIENT_KEY || ''),
+      'import.meta.env.VITE_API_URL': JSON.stringify(
+        mode === 'production' 
+          ? 'https://mp-project-production.up.railway.app'
+          : (env.VITE_API_URL || 'http://localhost:5000')
+      ),
+      'import.meta.env.VITE_MIDTRANS_CLIENT_KEY': JSON.stringify(
+        env.VITE_MIDTRANS_CLIENT_KEY || 'Mid-client-cm0WvOH0yKDz0eEL'
+      ),
     }
   }
 })
