@@ -1,0 +1,15 @@
+{
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "framework": null,
+  "env": {
+    "VITE_API_URL": "https://mp-project-production.up.railway.app",
+    "VITE_MIDTRANS_CLIENT_KEY": "Mid-client-cm0WvOH0yKDz0eEL"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://mp-project-production.up.railway.app",
+      "VITE_MIDTRANS_CLIENT_KEY": "Mid-client-cm0WvOH0yKDz0eEL"
+    }
+  }
+}
