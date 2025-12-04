@@ -3,6 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
+// Log environment info for debugging
+console.log('🌍 Environment:', import.meta.env.MODE);
+console.log('🔗 API URL:', import.meta.env.VITE_API_URL);
+console.log('📦 Vercel Env:', import.meta.env.VERCEL_ENV || 'local');
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
