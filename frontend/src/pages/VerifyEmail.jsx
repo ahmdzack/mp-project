@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { CheckCircle, XCircle, Loader2, Mail, Shield, RefreshCw } from 'lucide-react';
 
 const VerifyEmail = () => {
@@ -26,17 +26,15 @@ const VerifyEmail = () => {
     setResendMessage('');
 
     try {
-      const response = await axios.post(
-        'http://localhost:5000/api/auth/resend-verification',
-        { email }
-      );
+      const response = await api.post('/auth/resend-verification', { email });
 
       setResendMessage('✅ Kode verifikasi baru telah dikirim! Check inbox Anda.');
       
       // If in development, show code in console
-      if (response.data.verificationCode) {
-        console.log('🔢 NEW VERIFICATION CODE:', response.data.verificationCode);
-        setResendMessage(`✅ Kode baru dikirim! (Dev: ${response.data.verificationCode})`);
+      if (response.data?.data?.verificationCode) {
+        const verificationCode = response.data.data.verificationCode;
+        console.log('🔢 NEW VERIFICATION CODE:', verificationCode);
+        setResendMessage(`✅ Kode baru dikirim! (Dev: ${verificationCode})`);
       }
       
       // Clear message after 5 seconds
@@ -67,10 +65,7 @@ const VerifyEmail = () => {
     setMessage('');
 
     try {
-      const response = await axios.post(
-        'http://localhost:5000/api/auth/verify-email',
-        { email, code }
-      );
+      const response = await api.post('/auth/verify-email', { email, code });
 
       setStatus('success');
       setMessage(response.data.message);

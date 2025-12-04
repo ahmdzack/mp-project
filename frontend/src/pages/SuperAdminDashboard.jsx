@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../api/axios';
 import { 
   Shield,
   Users, 
@@ -48,19 +48,11 @@ function SuperAdminDashboard() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      
       // Fetch all data
       const [statsRes, usersRes, kostsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/stats', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5000/api/admin/users', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5000/api/admin/kost', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('/admin/stats'),
+        api.get('/admin/users'),
+        api.get('/admin/kost')
       ]);
 
       const statsData = statsRes.data.data || {};
@@ -101,12 +93,7 @@ function SuperAdminDashboard() {
     if (!window.confirm('Approve kost ini?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `http://localhost:5000/api/admin/kost/${kostId}/approve`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/admin/kost/${kostId}/approve`);
       alert('Kost berhasil diapprove!');
       fetchDashboardData();
     } catch (error) {
@@ -119,10 +106,7 @@ function SuperAdminDashboard() {
     if (!window.confirm('Hapus user ini? Tindakan ini tidak dapat dibatalkan.')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/admin/users/${userId}`);
       alert('User berhasil dihapus!');
       fetchDashboardData();
     } catch (error) {
@@ -135,10 +119,7 @@ function SuperAdminDashboard() {
     if (!window.confirm('Hapus kost ini? Tindakan ini tidak dapat dibatalkan.')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/kost/${kostId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/admin/kost/${kostId}`);
       alert('Kost berhasil dihapus!');
       fetchDashboardData();
     } catch (error) {

@@ -77,10 +77,8 @@ app.use('/api/kost', require('./src/routes/kost'));
 // Routes - Week 3 (NEW)
 app.use('/api/kost', require('./src/routes/kostImage'));
 
-// TEMPORARY: Seeder endpoint - REMOVE AFTER SEEDING
-if (process.env.NODE_ENV === 'production') {
-  app.use('/api/admin', require('./src/routes/seed'));
-}
+// Admin routes
+app.use('/api/admin', require('./src/routes/admin'));
 
 // Test Cloudinary connection
 const { testCloudinaryConnection } = require('./src/config/cloudinary');

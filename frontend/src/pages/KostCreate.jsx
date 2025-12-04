@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../api/axios';
 import { ArrowLeft, Plus, X, Upload, MapPin } from 'lucide-react';
 import MapPicker from '../components/MapPicker';
 
@@ -49,7 +49,7 @@ function KostCreate() {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/categories');
+      const response = await api.get('/categories');
       setCategories(response.data.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -58,7 +58,7 @@ function KostCreate() {
 
   const fetchKostTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/kost-types');
+      const response = await api.get('/kost-types');
       setKostTypes(response.data.data || []);
     } catch (error) {
       console.error('Error fetching kost types:', error);
@@ -67,7 +67,7 @@ function KostCreate() {
 
   const fetchFacilities = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/facilities');
+      const response = await api.get('/facilities');
       setFacilities(response.data.data || []);
     } catch (error) {
       console.error('Error fetching facilities:', error);
@@ -156,8 +156,6 @@ function KostCreate() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-
       // Prepare data
       const kostData = {
         ...formData,
@@ -174,15 +172,7 @@ function KostCreate() {
       };
 
       // Create kost
-      const response = await axios.post(
-        'http://localhost:5000/api/kost',
-        kostData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const response = await api.post('/kost', kostData);
 
       const newKostId = response.data.data.id;
 
@@ -193,12 +183,11 @@ function KostCreate() {
           formDataImages.append('images', image);
         });
 
-        await axios.post(
-          `http://localhost:5000/api/kost/${newKostId}/images`,
+        await api.post(
+          `/kost/${newKostId}/images`,
           formDataImages,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'
             }
           }

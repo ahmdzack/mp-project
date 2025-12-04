@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Label, Alert, AlertDescription } from '../components/ui';
 import { Home, Loader2, Eye, EyeOff, Mail, CheckCircle, RefreshCw } from 'lucide-react';
 
@@ -51,34 +52,23 @@ function Login() {
     setResendMessage('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/resend-verification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: formData.email }),
+      const { data } = await api.post('/auth/resend-verification', {
+        email: formData.email
       });
 
-      const data = await response.json();
+      setResendMessage('Kode verifikasi berhasil dikirim ulang! Cek inbox atau console.');
 
-      if (response.ok) {
-        setResendMessage('Kode verifikasi berhasil dikirim ulang! Cek inbox atau console.');
-        
-        // Log code to console in development
-        if (data.data?.verificationCode) {
-          console.log('🔢 VERIFICATION CODE:', data.data.verificationCode);
-          console.log('💡 TIP: Gunakan kode ini untuk verifikasi email');
-        }
-
-        // Clear success message after 5 seconds
-        setTimeout(() => setResendMessage(''), 5000);
-      } else {
-        setResendMessage(data.message || 'Gagal mengirim ulang kode verifikasi');
-        setTimeout(() => setResendMessage(''), 5000);
+      // Log code to console in development
+      if (data.data?.verificationCode) {
+        console.log('🔢 VERIFICATION CODE:', data.data.verificationCode);
+        console.log('💡 TIP: Gunakan kode ini untuk verifikasi email');
       }
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setResendMessage(''), 5000);
     } catch (error) {
       console.error('Resend verification error:', error);
-      setResendMessage('Terjadi kesalahan saat mengirim ulang kode');
+      setResendMessage(error.response?.data?.message || 'Terjadi kesalahan saat mengirim ulang kode');
       setTimeout(() => setResendMessage(''), 5000);
     } finally {
       setResending(false);

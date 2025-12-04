@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -31,10 +31,7 @@ function AdminKostDetail() {
 
   const fetchKostDetail = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/kost/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/kost/${id}`);
       
       setKost(response.data.data);
       setLoading(false);
@@ -49,12 +46,7 @@ function AdminKostDetail() {
     
     setProcessing(true);
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `http://localhost:5000/api/admin/kost/${id}/approve`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/admin/kost/${id}/approve`);
       
       alert('Kost berhasil disetujui!');
       fetchKostDetail();
@@ -71,10 +63,7 @@ function AdminKostDetail() {
     
     setProcessing(true);
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/admin/kost/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/admin/kost/${id}`);
       
       alert('Kost berhasil dihapus!');
       navigate('/admin/dashboard');

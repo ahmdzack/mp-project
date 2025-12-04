@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { MapPin, Home, DollarSign, Image as ImageIcon, X } from 'lucide-react';
 
 const KostEdit = () => {
@@ -42,10 +42,7 @@ const KostEdit = () => {
 
   const fetchKostData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/kost/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/kost/${id}`);
 
       const kost = response.data.data;
       setFormData({
@@ -77,17 +74,10 @@ const KostEdit = () => {
 
   const fetchMasterData = async () => {
     try {
-      const token = localStorage.getItem('token');
       const [categoriesRes, typesRes, facilitiesRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/categories', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5000/api/kost-types', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5000/api/facilities', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('/categories'),
+        api.get('/kost-types'),
+        api.get('/facilities')
       ]);
 
       setCategories(categoriesRes.data.data || []);
@@ -145,21 +135,12 @@ const KostEdit = () => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem('token');
-
       // Update kost data
-      await axios.put(
-        `http://localhost:5000/api/kost/${id}`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/kost/${id}`, formData);
 
       // Delete images
       for (const imageId of imagesToDelete) {
-        await axios.delete(
-          `http://localhost:5000/api/kost/${id}/images/${imageId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.delete(`/kost/${id}/images/${imageId}`);
       }
 
       // Upload new images
@@ -169,12 +150,11 @@ const KostEdit = () => {
           imageFormData.append('images', file);
         });
 
-        await axios.post(
-          `http://localhost:5000/api/kost/${id}/images`,
+        await api.post(
+          `/kost/${id}/images`,
           imageFormData,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               'Content-Type': 'multipart/form-data'
             }
           }
