@@ -1,69 +1,65 @@
-const nodemailer = require('nodemailer');
+const brevo = require('@getbrevo/brevo');
 require('dotenv').config();
 
-// Create transporter for Gmail SMTP with SSL (port 465)
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT || '465'),
-  secure: true, // true for 465 (SSL), false for 587 (TLS)
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  },
-  // Railway-specific settings
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+// Initialize Brevo API client
+let apiInstance = null;
+if (process.env.BREVO_API_KEY) {
+  apiInstance = new brevo.TransactionalEmailsApi();
+  apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+}
 
-// Send email verification using Gmail SMTP
+// Send email verification using Brevo
 const sendVerificationEmail = async (email, name, code) => {
   const verificationPageUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email`;
   
-  // Fallback: Log to console if SMTP not configured
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-    console.log('⚠️  EMAIL_USER or EMAIL_PASSWORD not set - logging verification code instead:');
+  // Fallback: Log to console if Brevo not configured
+  if (!apiInstance) {
+    console.log('⚠️  BREVO_API_KEY not set - logging verification code instead:');
     console.log('📧 Email:', email);
     console.log('👤 Name:', name);
     console.log('🔢 Verification Code:', code);
-    console.log('💡 Set EMAIL_USER and EMAIL_PASSWORD environment variables to send real emails');
+    console.log('💡 Set BREVO_API_KEY environment variable to send real emails');
     return { messageId: 'console-log', code }; // Return code for development
   }
   
   try {
-    const info = await transporter.sendMail({
-      from: `"KostKu" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Kode Verifikasi Email - KostKu',
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Halo ${name}!</h2>
-          <p style="font-size: 16px; color: #666;">Terima kasih telah mendaftar di KostKu.</p>
-          <p style="font-size: 16px; color: #666;">Gunakan kode verifikasi berikut untuk mengaktifkan akun Anda:</p>
-          
-          <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 30px 0; border-radius: 8px;">
-            <div style="font-size: 32px; font-weight: bold; color: #4CAF50; letter-spacing: 8px; font-family: 'Courier New', monospace;">
-              ${code}
-            </div>
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    
+    sendSmtpEmail.sender = {
+      name: 'KostKu',
+      email: process.env.EMAIL_USER || 'ahmadzacky723@gmail.com'
+    };
+    sendSmtpEmail.to = [{ email: email, name: name }];
+    sendSmtpEmail.subject = 'Kode Verifikasi Email - KostKu';
+    sendSmtpEmail.htmlContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Halo ${name}!</h2>
+        <p style="font-size: 16px; color: #666;">Terima kasih telah mendaftar di KostKu.</p>
+        <p style="font-size: 16px; color: #666;">Gunakan kode verifikasi berikut untuk mengaktifkan akun Anda:</p>
+        
+        <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 30px 0; border-radius: 8px;">
+          <div style="font-size: 32px; font-weight: bold; color: #4CAF50; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+            ${code}
           </div>
-          
-          <p style="font-size: 14px; color: #666;">
-            Buka halaman verifikasi di: 
-            <a href="${verificationPageUrl}" style="color: #4CAF50;">${verificationPageUrl}</a>
-          </p>
-          <p style="font-size: 14px; color: #666;">Masukkan kode di atas untuk verifikasi email Anda.</p>
-          <p style="font-size: 14px; color: #999;">Kode ini akan expired dalam 1 jam.</p>
-          
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="color: #999; font-size: 12px;">
-            Jika Anda tidak melakukan pendaftaran, abaikan email ini.
-          </p>
         </div>
-      `
-    });
+        
+        <p style="font-size: 14px; color: #666;">
+          Buka halaman verifikasi di: 
+          <a href="${verificationPageUrl}" style="color: #4CAF50;">${verificationPageUrl}</a>
+        </p>
+        <p style="font-size: 14px; color: #666;">Masukkan kode di atas untuk verifikasi email Anda.</p>
+        <p style="font-size: 14px; color: #999;">Kode ini akan expired dalam 1 jam.</p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px;">
+          Jika Anda tidak melakukan pendaftaran, abaikan email ini.
+        </p>
+      </div>
+    `;
 
-    console.log('✅ Verification email sent via Gmail SMTP:', info.messageId);
-    return { messageId: info.messageId };
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('✅ Verification email sent via Brevo:', result.messageId);
+    return { messageId: result.messageId };
   } catch (error) {
     console.error('❌ Error sending verification email:', error);
     throw new Error('Gagal mengirim email verifikasi');
@@ -72,39 +68,43 @@ const sendVerificationEmail = async (email, name, code) => {
 
 // Send kost approval email
 const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
-  // Fallback: Log to console if SMTP not configured
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-    console.log('⚠️  EMAIL_USER or EMAIL_PASSWORD not set - logging approval email instead:');
+  // Fallback: Log to console if Brevo not configured
+  if (!apiInstance) {
+    console.log('⚠️  BREVO_API_KEY not set - logging approval email instead:');
     console.log('📧 Email:', ownerEmail);
     console.log('👤 Owner:', ownerName);
     console.log('🏠 Kost:', kostName);
-    console.log('💡 Set EMAIL_USER and EMAIL_PASSWORD environment variables to send real emails');
+    console.log('💡 Set BREVO_API_KEY environment variable to send real emails');
     return { messageId: 'console-log' };
   }
   
   try {
-    const info = await transporter.sendMail({
-      from: `"KostKu" <${process.env.EMAIL_USER}>`,
-      to: ownerEmail,
-      subject: 'Kost Anda Telah Disetujui - KostKu',
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #4CAF50;">Selamat, ${ownerName}!</h2>
-          <p style="font-size: 16px; color: #666;">
-            Kost "<strong>${kostName}</strong>" Anda telah disetujui oleh admin dan sekarang dapat dilihat oleh calon penyewa.
-          </p>
-          <p style="font-size: 14px; color: #666;">
-            Kost Anda kini aktif dan dapat menerima reservasi dari pengguna.
-          </p>
-          <p style="font-size: 14px; color: #999;">
-            Terima kasih telah bergabung dengan KostKu!
-          </p>
-        </div>
-      `
-    });
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    
+    sendSmtpEmail.sender = {
+      name: 'KostKu',
+      email: process.env.EMAIL_USER || 'ahmadzacky723@gmail.com'
+    };
+    sendSmtpEmail.to = [{ email: ownerEmail, name: ownerName }];
+    sendSmtpEmail.subject = 'Kost Anda Telah Disetujui - KostKu';
+    sendSmtpEmail.htmlContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #4CAF50;">Selamat, ${ownerName}!</h2>
+        <p style="font-size: 16px; color: #666;">
+          Kost "<strong>${kostName}</strong>" Anda telah disetujui oleh admin dan sekarang dapat dilihat oleh calon penyewa.
+        </p>
+        <p style="font-size: 14px; color: #666;">
+          Kost Anda kini aktif dan dapat menerima reservasi dari pengguna.
+        </p>
+        <p style="font-size: 14px; color: #999;">
+          Terima kasih telah bergabung dengan KostKu!
+        </p>
+      </div>
+    `;
 
-    console.log('✅ Approval email sent via Gmail SMTP:', info.messageId);
-    return { messageId: info.messageId };
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('✅ Approval email sent via Brevo:', result.messageId);
+    return { messageId: result.messageId };
   } catch (error) {
     console.error('❌ Error sending approval email:', error);
     throw new Error('Gagal mengirim email persetujuan');
