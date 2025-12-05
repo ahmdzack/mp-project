@@ -1,57 +1,32 @@
-const nodemailer = require('nodemailer');
-const { google } = require('googleapis');
+const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
 
-// Gmail OAuth2 Configuration
-const OAuth2 = google.auth.OAuth2;
-
-// Create OAuth2 client
-let transporter = null;
-if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
-  const oauth2Client = new OAuth2(
-    process.env.GMAIL_CLIENT_ID,
-    process.env.GMAIL_CLIENT_SECRET,
-    'https://developers.google.com/oauthplayground' // Redirect URL
-  );
-
-  oauth2Client.setCredentials({
-    refresh_token: process.env.GMAIL_REFRESH_TOKEN
-  });
-
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.GMAIL_USER || 'ahmadzacky723@gmail.com',
-      clientId: process.env.GMAIL_CLIENT_ID,
-      clientSecret: process.env.GMAIL_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-      accessToken: async () => {
-        const { token } = await oauth2Client.getAccessToken();
-        return token;
-      }
-    }
-  });
+// Initialize SendGrid with API key
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
-// Send email verification using Gmail OAuth2
+// Send email verification using SendGrid
 const sendVerificationEmail = async (email, name, code) => {
   const verificationPageUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email`;
   
-  // Fallback: Log to console if Gmail OAuth2 not configured
-  if (!transporter) {
-    console.log('⚠️  Gmail OAuth2 not configured - logging verification code instead:');
+  // Fallback: Log to console if SendGrid not configured
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('⚠️  SENDGRID_API_KEY not set - logging verification code instead:');
     console.log('📧 Email:', email);
     console.log('👤 Name:', name);
     console.log('🔢 Verification Code:', code);
-    console.log('💡 Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN environment variables to send real emails');
+    console.log('💡 Set SENDGRID_API_KEY environment variable to send real emails');
     return { messageId: 'console-log', code }; // Return code for development
   }
   
   try {
-    const mailOptions = {
-      from: `KostKu <${process.env.GMAIL_USER || 'ahmadzacky723@gmail.com'}>`,
+    const msg = {
       to: email,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || 'ahmadzacky723@gmail.com',
+        name: 'KostKu'
+      },
       subject: 'Kode Verifikasi Email - KostKu',
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
@@ -80,31 +55,34 @@ const sendVerificationEmail = async (email, name, code) => {
       `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Verification email sent via Gmail OAuth2:', info.messageId);
-    return { messageId: info.messageId };
+    const response = await sgMail.send(msg);
+    console.log('✅ Verification email sent via SendGrid:', response[0].statusCode);
+    return { messageId: response[0].headers['x-message-id'] };
   } catch (error) {
-    console.error('❌ Error sending verification email:', error);
+    console.error('❌ Error sending verification email:', error.response?.body || error);
     throw new Error('Gagal mengirim email verifikasi');
   }
 };
 
 // Send kost approval email
 const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
-  // Fallback: Log to console if Gmail OAuth2 not configured
-  if (!transporter) {
-    console.log('⚠️  Gmail OAuth2 not configured - logging approval email instead:');
+  // Fallback: Log to console if SendGrid not configured
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('⚠️  SENDGRID_API_KEY not set - logging approval email instead:');
     console.log('📧 Email:', ownerEmail);
     console.log('👤 Owner:', ownerName);
     console.log('🏠 Kost:', kostName);
-    console.log('💡 Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN environment variables to send real emails');
+    console.log('💡 Set SENDGRID_API_KEY environment variable to send real emails');
     return { messageId: 'console-log' };
   }
   
   try {
-    const mailOptions = {
-      from: `KostKu <${process.env.GMAIL_USER || 'ahmadzacky723@gmail.com'}>`,
+    const msg = {
       to: ownerEmail,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || 'ahmadzacky723@gmail.com',
+        name: 'KostKu'
+      },
       subject: 'Kost Anda Telah Disetujui - KostKu',
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
@@ -122,11 +100,11 @@ const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
       `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Approval email sent via Gmail OAuth2:', info.messageId);
-    return { messageId: info.messageId };
+    const response = await sgMail.send(msg);
+    console.log('✅ Approval email sent via SendGrid:', response[0].statusCode);
+    return { messageId: response[0].headers['x-message-id'] };
   } catch (error) {
-    console.error('❌ Error sending approval email:', error);
+    console.error('❌ Error sending approval email:', error.response?.body || error);
     throw new Error('Gagal mengirim email persetujuan');
   }
 };
