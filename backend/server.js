@@ -77,6 +77,12 @@ app.use('/api/kost', require('./src/routes/kost'));
 // Routes - Week 3 (NEW)
 app.use('/api/kost', require('./src/routes/kostImage'));
 
+// Booking routes
+app.use('/api/bookings', require('./src/routes/booking'));
+
+// Payment routes
+app.use('/api/payments', require('./src/routes/payment'));
+
 // Admin routes
 app.use('/api/admin', require('./src/routes/admin'));
 
