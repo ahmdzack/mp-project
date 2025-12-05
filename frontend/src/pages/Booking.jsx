@@ -339,18 +339,6 @@ function Booking() {
                   </Alert>
                 )}
 
-                {/* Debug Info - Remove in production */}
-                {user && (
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm">
-                    <p><strong>Debug Info:</strong></p>
-                    <p>User: {user.name} ({user.email})</p>
-                    <p>Role: <strong className={user.role === 'pencari' ? 'text-green-600' : 'text-red-600'}>{user.role}</strong></p>
-                    {user.role !== 'pencari' && (
-                      <p className="text-red-600 mt-2">⚠️ Perhatian: Hanya pengguna dengan role "pencari" yang dapat membuat booking!</p>
-                    )}
-                  </div>
-                )}
-
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Date Selection */}
                   <div className="space-y-4">

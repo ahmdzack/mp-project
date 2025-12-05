@@ -20,7 +20,7 @@ const sendVerificationEmail = async (email, name, code) => {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'KostKu <onboarding@resend.dev>', // Using Resend's onboarding domain (no verification needed)
+      from: process.env.RESEND_FROM_EMAIL || 'KostKu <onboarding@resend.dev>',
       to: email,
       subject: 'Kode Verifikasi Email - KostKu',
       html: `
@@ -77,7 +77,7 @@ const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'KostKu <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM_EMAIL || 'KostKu <onboarding@resend.dev>',
       to: ownerEmail,
       subject: 'Kost Anda Telah Disetujui - KostKu',
       html: `
