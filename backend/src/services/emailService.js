@@ -1,35 +1,56 @@
-const formData = require('form-data');
-const Mailgun = require('mailgun.js');
+const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 require('dotenv').config();
 
-// Initialize Mailgun client
-let mailgun = null;
-let mg = null;
-if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
-  mailgun = new Mailgun(formData);
-  mg = mailgun.client({
-    username: 'api',
-    key: process.env.MAILGUN_API_KEY
+// Gmail OAuth2 Configuration
+const OAuth2 = google.auth.OAuth2;
+
+// Create OAuth2 client
+let transporter = null;
+if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
+  const oauth2Client = new OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    'https://developers.google.com/oauthplayground' // Redirect URL
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN
+  });
+
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.GMAIL_USER || 'ahmadzacky723@gmail.com',
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+      accessToken: async () => {
+        const { token } = await oauth2Client.getAccessToken();
+        return token;
+      }
+    }
   });
 }
 
-// Send email verification using Mailgun
+// Send email verification using Gmail OAuth2
 const sendVerificationEmail = async (email, name, code) => {
   const verificationPageUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email`;
   
-  // Fallback: Log to console if Mailgun not configured
-  if (!mg) {
-    console.log('⚠️  MAILGUN_API_KEY or MAILGUN_DOMAIN not set - logging verification code instead:');
+  // Fallback: Log to console if Gmail OAuth2 not configured
+  if (!transporter) {
+    console.log('⚠️  Gmail OAuth2 not configured - logging verification code instead:');
     console.log('📧 Email:', email);
     console.log('👤 Name:', name);
     console.log('🔢 Verification Code:', code);
-    console.log('💡 Set MAILGUN_API_KEY and MAILGUN_DOMAIN environment variables to send real emails');
-    return { id: 'console-log', code }; // Return code for development
+    console.log('💡 Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN environment variables to send real emails');
+    return { messageId: 'console-log', code }; // Return code for development
   }
   
   try {
-    const messageData = {
-      from: `KostKu <mailgun@${process.env.MAILGUN_DOMAIN}>`,
+    const mailOptions = {
+      from: `KostKu <${process.env.GMAIL_USER || 'ahmadzacky723@gmail.com'}>`,
       to: email,
       subject: 'Kode Verifikasi Email - KostKu',
       html: `
@@ -59,9 +80,9 @@ const sendVerificationEmail = async (email, name, code) => {
       `
     };
 
-    const result = await mg.messages.create(process.env.MAILGUN_DOMAIN, messageData);
-    console.log('✅ Verification email sent via Mailgun:', result.id);
-    return { id: result.id };
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Verification email sent via Gmail OAuth2:', info.messageId);
+    return { messageId: info.messageId };
   } catch (error) {
     console.error('❌ Error sending verification email:', error);
     throw new Error('Gagal mengirim email verifikasi');
@@ -70,19 +91,19 @@ const sendVerificationEmail = async (email, name, code) => {
 
 // Send kost approval email
 const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
-  // Fallback: Log to console if Mailgun not configured
-  if (!mg) {
-    console.log('⚠️  MAILGUN_API_KEY or MAILGUN_DOMAIN not set - logging approval email instead:');
+  // Fallback: Log to console if Gmail OAuth2 not configured
+  if (!transporter) {
+    console.log('⚠️  Gmail OAuth2 not configured - logging approval email instead:');
     console.log('📧 Email:', ownerEmail);
     console.log('👤 Owner:', ownerName);
     console.log('🏠 Kost:', kostName);
-    console.log('💡 Set MAILGUN_API_KEY and MAILGUN_DOMAIN environment variables to send real emails');
-    return { id: 'console-log' };
+    console.log('💡 Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN environment variables to send real emails');
+    return { messageId: 'console-log' };
   }
   
   try {
-    const messageData = {
-      from: `KostKu <mailgun@${process.env.MAILGUN_DOMAIN}>`,
+    const mailOptions = {
+      from: `KostKu <${process.env.GMAIL_USER || 'ahmadzacky723@gmail.com'}>`,
       to: ownerEmail,
       subject: 'Kost Anda Telah Disetujui - KostKu',
       html: `
@@ -101,9 +122,9 @@ const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
       `
     };
 
-    const result = await mg.messages.create(process.env.MAILGUN_DOMAIN, messageData);
-    console.log('✅ Approval email sent via Mailgun:', result.id);
-    return { id: result.id };
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Approval email sent via Gmail OAuth2:', info.messageId);
+    return { messageId: info.messageId };
   } catch (error) {
     console.error('❌ Error sending approval email:', error);
     throw new Error('Gagal mengirim email persetujuan');
