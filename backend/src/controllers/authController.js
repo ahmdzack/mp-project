@@ -1,7 +1,7 @@
 const { User, EmailVerification, PhoneVerification } = require('../models');
 const generateToken = require('../utils/generateToken');
 const { generateRandomToken, generateRandomCode, getExpirationTime } = require('../utils/helpers');
-const { sendVerificationEmail } = require('../services/emailServiceResend'); // Use Resend instead of SMTP
+const { sendVerificationEmail } = require('../services/emailService'); // Use Resend instead of SMTP
 const { sendVerificationSMS } = require('../services/smsService');
 
 // @desc    Register new user

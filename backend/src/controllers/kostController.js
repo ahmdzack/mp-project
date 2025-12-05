@@ -1,6 +1,6 @@
 const { Kost, Category, KostType, Facility, KostImage, User } = require('../models');
 const { Op } = require('sequelize');
-const { sendKostApprovalEmail } = require('../services/emailServiceResend'); // Use Resend
+const { sendKostApprovalEmail } = require('../services/emailService'); // Use Resend
 
 // @desc    Create new kost
 // @route   POST /api/kost

@@ -1,10 +1,10 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Create transporter
+// Create transporter for Gmail SMTP
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.EMAIL_PORT || '587'),
   secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
@@ -12,113 +12,98 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Send email verification
+// Send email verification using Gmail SMTP
 const sendVerificationEmail = async (email, name, code) => {
-  const verificationPageUrl = `${process.env.FRONTEND_URL}/verify-email`;
+  const verificationPageUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email`;
   
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: 'Kode Verifikasi Email - Kost Reservation',
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Halo ${name}!</h2>
-        <p style="font-size: 16px; color: #666;">Terima kasih telah mendaftar di Kost Reservation.</p>
-        <p style="font-size: 16px; color: #666;">Gunakan kode verifikasi berikut untuk mengaktifkan akun Anda:</p>
-        
-        <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 30px 0; border-radius: 8px;">
-          <div style="font-size: 32px; font-weight: bold; color: #4CAF50; letter-spacing: 8px; font-family: 'Courier New', monospace;">
-            ${code}
-          </div>
-        </div>
-        
-        <p style="font-size: 14px; color: #666;">
-          Buka halaman verifikasi di: 
-          <a href="${verificationPageUrl}" style="color: #4CAF50;">${verificationPageUrl}</a>
-        </p>
-        <p style="font-size: 14px; color: #666;">Masukkan kode di atas untuk verifikasi email Anda.</p>
-        <p style="font-size: 14px; color: #999;">Kode ini akan expired dalam 1 jam.</p>
-        
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-        <p style="color: #999; font-size: 12px;">
-          Jika Anda tidak melakukan pendaftaran, abaikan email ini.
-        </p>
-      </div>
-    `
-  };
-
+  // Fallback: Log to console if SMTP not configured
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    console.log('⚠️  EMAIL_USER or EMAIL_PASSWORD not set - logging verification code instead:');
+    console.log('📧 Email:', email);
+    console.log('👤 Name:', name);
+    console.log('🔢 Verification Code:', code);
+    console.log('💡 Set EMAIL_USER and EMAIL_PASSWORD environment variables to send real emails');
+    return { messageId: 'console-log', code }; // Return code for development
+  }
+  
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Email verification sent to:', email);
-    return true;
+    const info = await transporter.sendMail({
+      from: `"KostKu" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Kode Verifikasi Email - KostKu',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Halo ${name}!</h2>
+          <p style="font-size: 16px; color: #666;">Terima kasih telah mendaftar di KostKu.</p>
+          <p style="font-size: 16px; color: #666;">Gunakan kode verifikasi berikut untuk mengaktifkan akun Anda:</p>
+          
+          <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 30px 0; border-radius: 8px;">
+            <div style="font-size: 32px; font-weight: bold; color: #4CAF50; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+              ${code}
+            </div>
+          </div>
+          
+          <p style="font-size: 14px; color: #666;">
+            Buka halaman verifikasi di: 
+            <a href="${verificationPageUrl}" style="color: #4CAF50;">${verificationPageUrl}</a>
+          </p>
+          <p style="font-size: 14px; color: #666;">Masukkan kode di atas untuk verifikasi email Anda.</p>
+          <p style="font-size: 14px; color: #999;">Kode ini akan expired dalam 1 jam.</p>
+          
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="color: #999; font-size: 12px;">
+            Jika Anda tidak melakukan pendaftaran, abaikan email ini.
+          </p>
+        </div>
+      `
+    });
+
+    console.log('✅ Verification email sent via Gmail SMTP:', info.messageId);
+    return { messageId: info.messageId };
   } catch (error) {
-    console.error('❌ Error sending email:', error);
-    return false;
+    console.error('❌ Error sending verification email:', error);
+    throw new Error('Gagal mengirim email verifikasi');
   }
 };
 
 // Send kost approval email
-const sendKostApprovalEmail = async (email, ownerName, kostName, kostId) => {
-  const kostDetailUrl = `${process.env.FRONTEND_URL}/kost/${kostId}`;
-  const dashboardUrl = `${process.env.FRONTEND_URL}/owner/dashboard`;
+const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
+  // Fallback: Log to console if SMTP not configured
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    console.log('⚠️  EMAIL_USER or EMAIL_PASSWORD not set - logging approval email instead:');
+    console.log('📧 Email:', ownerEmail);
+    console.log('👤 Owner:', ownerName);
+    console.log('🏠 Kost:', kostName);
+    console.log('💡 Set EMAIL_USER and EMAIL_PASSWORD environment variables to send real emails');
+    return { messageId: 'console-log' };
+  }
   
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: '✅ Kost Anda Telah Disetujui - Kost Reservation',
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Kost Disetujui!</h1>
-        </div>
-        
-        <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px;">
-          <h2 style="color: #333; margin-top: 0;">Halo ${ownerName}!</h2>
-          <p style="font-size: 16px; color: #666; line-height: 1.6;">
-            Kabar baik! Kost Anda telah disetujui oleh admin dan sekarang sudah <strong>live</strong> di platform kami.
-          </p>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-left: 4px solid #4CAF50; margin: 25px 0; border-radius: 4px;">
-            <h3 style="color: #333; margin: 0 0 10px 0; font-size: 18px;">📍 ${kostName}</h3>
-            <p style="color: #666; margin: 0; font-size: 14px;">ID Kost: #${kostId}</p>
-          </div>
-          
-          <p style="font-size: 16px; color: #666; line-height: 1.6;">
-            Kost Anda kini dapat dilihat dan dipesan oleh calon penyewa. Pastikan informasi kost selalu up-to-date untuk mendapatkan lebih banyak booking.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${kostDetailUrl}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px;">
-              Lihat Detail Kost
-            </a>
-            <a href="${dashboardUrl}" style="display: inline-block; background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px;">
-              Buka Dashboard
-            </a>
-          </div>
-          
-          <div style="background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin-top: 25px;">
-            <p style="color: #2e7d32; margin: 0; font-size: 14px; font-weight: 500;">
-              💡 <strong>Tips:</strong> Lengkapi foto-foto berkualitas dan deskripsi detail untuk menarik lebih banyak penyewa!
-            </p>
-          </div>
-          
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;">
-          
-          <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
-            Jika Anda memiliki pertanyaan, hubungi kami melalui email atau dashboard Anda.
-          </p>
-        </div>
-      </div>
-    `
-  };
-
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Kost approval email sent to:', email);
-    return true;
+    const info = await transporter.sendMail({
+      from: `"KostKu" <${process.env.EMAIL_USER}>`,
+      to: ownerEmail,
+      subject: 'Kost Anda Telah Disetujui - KostKu',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #4CAF50;">Selamat, ${ownerName}!</h2>
+          <p style="font-size: 16px; color: #666;">
+            Kost "<strong>${kostName}</strong>" Anda telah disetujui oleh admin dan sekarang dapat dilihat oleh calon penyewa.
+          </p>
+          <p style="font-size: 14px; color: #666;">
+            Kost Anda kini aktif dan dapat menerima reservasi dari pengguna.
+          </p>
+          <p style="font-size: 14px; color: #999;">
+            Terima kasih telah bergabung dengan KostKu!
+          </p>
+        </div>
+      `
+    });
+
+    console.log('✅ Approval email sent via Gmail SMTP:', info.messageId);
+    return { messageId: info.messageId };
   } catch (error) {
-    console.error('❌ Error sending kost approval email:', error);
-    return false;
+    console.error('❌ Error sending approval email:', error);
+    throw new Error('Gagal mengirim email persetujuan');
   }
 };
 
