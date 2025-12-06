@@ -64,7 +64,7 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/kost" element={<KostSearch />} />
           <Route path="/kost/:id" element={<KostDetail />} />
-          <Route path="/booking/:id" element={<Booking />} />
+          <Route path="/booking/:id" element={<Booking key={window.location.pathname} />} />
           <Route 
             path="/payment/:bookingId" 
             element={
