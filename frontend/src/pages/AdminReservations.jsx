@@ -24,7 +24,10 @@ function AdminReservations() {
     try {
       setLoading(true);
       const response = await api.get('/bookings');
-      setReservations(response.data.data || []);
+      console.log('Admin Reservations Response:', response.data);
+      const bookingsData = response.data.data || [];
+      console.log('Reservations Data:', bookingsData);
+      setReservations(bookingsData);
     } catch (error) {
       console.error('Error fetching reservations:', error);
     } finally {
@@ -115,7 +118,10 @@ function AdminReservations() {
               {formatCurrency(
                 reservations
                   .filter(r => r.status === 'confirmed' || r.status === 'completed')
-                  .reduce((sum, r) => sum + (r.total_price || 0), 0)
+                  .reduce((sum, r) => {
+                    const price = Number(r.total_price) || 0;
+                    return sum + price;
+                  }, 0)
               )}
             </p>
           </div>

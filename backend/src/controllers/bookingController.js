@@ -205,6 +205,7 @@ exports.getAllBookings = async (req, res, next) => {
       const myKostIds = myKosts.map(k => k.id);
       where.kost_id = myKostIds;
     }
+    // Admin bisa lihat semua bookings (tidak ada filter)
 
     // Filter by status
     if (status) {
@@ -252,19 +253,26 @@ exports.getAllBookings = async (req, res, next) => {
       order: [['created_at', 'DESC']]
     });
 
-    // Normalize response - convert Kost to kost and add primary_image
+    // Normalize response - add user_name, user_email, kost_name untuk frontend
     const bookingsData = bookings.map(booking => {
       const bookingJson = booking.toJSON();
       
-      // Normalize Kost to kost (lowercase)
-      if (bookingJson.Kost) {
-        bookingJson.kost = bookingJson.Kost;
-        delete bookingJson.Kost;
+      // Add flattened user data
+      if (bookingJson.user) {
+        bookingJson.user_name = bookingJson.user.name;
+        bookingJson.user_email = bookingJson.user.email;
+        bookingJson.user_phone = bookingJson.user.phone;
       }
       
-      // Add primary_image to kost if it has images
-      if (bookingJson.kost && bookingJson.kost.images && bookingJson.kost.images.length > 0) {
-        bookingJson.kost.primary_image = bookingJson.kost.images[0].image_url;
+      // Add flattened kost data
+      if (bookingJson.kost) {
+        bookingJson.kost_name = bookingJson.kost.name;
+        bookingJson.kost_city = bookingJson.kost.city;
+        
+        // Add primary_image to kost if it has images
+        if (bookingJson.kost.images && bookingJson.kost.images.length > 0) {
+          bookingJson.kost.primary_image = bookingJson.kost.images[0].image_url;
+        }
       }
       
       return bookingJson;
