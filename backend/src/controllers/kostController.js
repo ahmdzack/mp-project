@@ -98,6 +98,7 @@ const getAllKost = async (req, res) => {
       max_price,
       approved,
       search,
+      owner_id,
       page = 1,
       limit = 10
     } = req.query;
@@ -105,18 +106,25 @@ const getAllKost = async (req, res) => {
     // Build where clause
     const where = {};
 
-    // Filter by approval (default: only approved for public)
-    if (req.user && req.user.role === 'admin') {
-      // Admin can see all
-      if (approved !== undefined) {
-        where.is_approved = approved === 'true';
-      }
-    } else if (req.user && req.user.role === 'pemilik') {
-      // Pemilik can see their own kost
-      where.owner_id = req.user.id;
+    // Filter by owner_id if provided (for owner dashboard)
+    if (owner_id) {
+      where.owner_id = parseInt(owner_id);
+      // Pemilik can see their own kost (both approved and pending)
+      // No approval filter needed
     } else {
-      // Public can only see approved
-      where.is_approved = true;
+      // Filter by approval (default: only approved for public)
+      if (req.user && req.user.role === 'admin') {
+        // Admin can see all
+        if (approved !== undefined) {
+          where.is_approved = approved === 'true';
+        }
+      } else if (req.user && req.user.role === 'pemilik') {
+        // Pemilik can see their own kost
+        where.owner_id = req.user.id;
+      } else {
+        // Public can only see approved
+        where.is_approved = true;
+      }
     }
 
     // Category filter
