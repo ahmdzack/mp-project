@@ -237,7 +237,6 @@ function SuperAdminDashboard() {
             <p className="text-xs text-gray-500">Dari transaksi sukses</p>
           </div>
         </div>
-        </div>
 
         {/* Management Sections */}
         <div className="grid gap-6 lg:grid-cols-2">
