@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { Button, Card, CardContent, Badge } from '../components/ui';
@@ -11,6 +11,7 @@ function KostDetail() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [kost, setKost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,8 +27,10 @@ function KostDetail() {
 
   console.log('🏠 KostDetail render:', { id, hasUser: !!user, kost: kost?.name });
 
-  const fetchKostDetail = useCallback(async () => {
+  const fetchKostDetail = async () => {
     try {
+      setLoading(true);
+      setError('');
       const { data } = await api.get(`/kost/${id}`);
       setKost(data.data);
     } catch (err) {
@@ -36,17 +39,16 @@ function KostDetail() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  };
 
   useEffect(() => {
-    console.log('🔄 KostDetail useEffect triggered for id:', id);
-    // Reset state when id changes
-    setLoading(true);
-    setError('');
+    console.log('🔄 KostDetail useEffect triggered for id:', id, 'key:', location.key);
+    // Reset state and fetch new data when id changes
     setKost(null);
     setSelectedImage(0);
     fetchKostDetail();
-  }, [id, fetchKostDetail]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, location.key]);
 
   const handleBooking = () => {
     if (!user) {
