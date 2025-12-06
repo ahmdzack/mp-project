@@ -1,7 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import Home from './Home';
 import OwnerHome from './OwnerHome';
-import { Navigate } from 'react-router-dom';
+import AdminHome from './AdminHome';
 
 function HomeRouter() {
   const { user, loading } = useAuth();
@@ -27,9 +27,9 @@ function HomeRouter() {
     return <OwnerHome />;
   }
 
-  // If user is admin, redirect to admin dashboard
+  // If user is admin, show admin home page
   if (user.role === 'admin') {
-    return <Navigate to="/dashboard/admin" replace />;
+    return <AdminHome />;
   }
 
   // Default fallback
