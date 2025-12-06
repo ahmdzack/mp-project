@@ -224,11 +224,11 @@ function KostCreate() {
         {/* Header */}
         <div className="mb-6">
           <button
-            onClick={() => navigate('/dashboard/owner')}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="h-5 w-5" />
-            Kembali ke Dashboard
+            Kembali
           </button>
           <h1 className="text-3xl font-bold text-gray-900">Tambah Kost Baru</h1>
           <p className="text-gray-600 mt-1">Lengkapi informasi kost Anda</p>
@@ -556,8 +556,8 @@ function KostCreate() {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/dashboard/owner')}
-              className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={() => navigate(-1)}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Batal
             </button>

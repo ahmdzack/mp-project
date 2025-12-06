@@ -187,10 +187,10 @@ const KostEdit = () => {
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-6">
           <button
-            onClick={() => navigate('/dashboard/owner')}
+            onClick={() => navigate(-1)}
             className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
           >
-            ← Kembali ke Dashboard
+            ← Kembali
           </button>
           <h1 className="text-3xl font-bold text-gray-900 mt-4">Edit Kost</h1>
           <p className="text-gray-600 mt-2">Perbarui informasi properti kost Anda</p>

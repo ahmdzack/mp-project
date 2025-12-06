@@ -111,10 +111,10 @@ function AdminKostDetail() {
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Kost tidak ditemukan</h2>
           <button
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate(-1)}
             className="text-blue-600 hover:text-blue-700"
           >
-            Kembali ke Dashboard
+            Kembali
           </button>
         </div>
       </div>
@@ -127,11 +127,11 @@ function AdminKostDetail() {
         {/* Header */}
         <div className="mb-6">
           <button
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="h-5 w-5" />
-            Kembali ke Dashboard
+            Kembali
           </button>
 
           <div className="bg-white rounded-lg shadow-sm p-6">
