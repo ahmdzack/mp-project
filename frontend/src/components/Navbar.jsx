@@ -188,32 +188,75 @@ function Navbar() {
                 Beranda
               </Link>
               
+              <Link 
+                to="/kost" 
+                className="text-sm font-medium hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Cari Kost
+              </Link>
+              
+              {/* Admin Dashboard Link */}
+              {user && user.role === 'admin' && (
+                <Link 
+                  to="/dashboard/admin" 
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard Admin
+                </Link>
+              )}
+              
+              {/* Owner Dashboard Link */}
+              {user && user.role === 'pemilik' && (
+                <Link 
+                  to="/dashboard/owner" 
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard Owner
+                </Link>
+              )}
+              
+              {/* Pencari Reservasi Link */}
+              {user && user.role === 'pencari' && (
+                <Link 
+                  to="/reservations" 
+                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Calendar className="h-4 w-4" />
+                  Reservasi Saya
+                </Link>
+              )}
+              
               {user ? (
-                <>
-                  {user.role === 'penyewa' && (
-                    <Link 
-                      to="/my-bookings" 
-                      className="text-sm font-medium hover:text-primary transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Booking Saya
-                    </Link>
+                <div className="pt-2 border-t">
+                  <div className="text-sm font-medium mb-1">{user.name}</div>
+                  <div className="text-xs text-muted-foreground mb-1">{user.email}</div>
+                  {user.role && (
+                    <span className={`inline-block px-2 py-0.5 text-xs rounded-full font-medium mb-3 ${
+                      user.role === 'admin' ? 'bg-red-100 text-red-700' :
+                      user.role === 'pemilik' ? 'bg-blue-100 text-blue-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {user.role === 'admin' ? 'Admin' : 
+                       user.role === 'pemilik' ? 'Owner' : 'Pencari'}
+                    </span>
                   )}
-                  <div className="pt-2 border-t">
-                    <div className="text-sm text-muted-foreground mb-2">{user.name}</div>
-                    <div className="text-xs text-muted-foreground mb-3">{user.email}</div>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center gap-2 text-sm font-medium text-destructive hover:text-destructive/90 transition-colors"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Logout
-                    </button>
-                  </div>
-                </>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium text-destructive hover:text-destructive/90 transition-colors mt-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
               ) : (
                 <>
                   <Link 
