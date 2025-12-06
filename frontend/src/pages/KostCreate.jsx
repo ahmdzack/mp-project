@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import { ArrowLeft, Plus, X, Upload, MapPin } from 'lucide-react';
+import { ArrowLeft, Plus, X, Upload, MapPin, CheckCircle } from 'lucide-react';
 import MapPicker from '../components/MapPicker';
 
 function KostCreate() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [categories, setCategories] = useState([]);
   const [kostTypes, setKostTypes] = useState([]);
   const [facilities, setFacilities] = useState([]);
@@ -194,8 +195,7 @@ function KostCreate() {
         );
       }
 
-      alert('Kost berhasil dibuat! Menunggu persetujuan admin.');
-      navigate('/dashboard/owner');
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error creating kost:', error);
       
@@ -208,7 +208,7 @@ function KostCreate() {
         setErrors(backendErrors);
       }
       
-      alert(error.response?.data?.message || 'Gagal membuat kost');
+      alert('❌ ' + (error.response?.data?.message || 'Gagal membuat kost'));
     } finally {
       setLoading(false);
     }
@@ -221,6 +221,37 @@ function KostCreate() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Success Dialog */}
+        {showSuccessDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-in fade-in zoom-in duration-200">
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-green-100">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Kost Berhasil Dibuat!
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Kost Anda telah berhasil ditambahkan dan sedang menunggu persetujuan admin.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t">
+                <button
+                  onClick={() => navigate('/dashboard/owner')}
+                  className="flex-1 px-4 py-2.5 rounded-lg font-medium text-white transition-all duration-200 bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/30"
+                >
+                  Oke
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-6">
           <button

@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
-import { MapPin, Home, DollarSign, Image as ImageIcon, X } from 'lucide-react';
+import { MapPin, Home, DollarSign, Image as ImageIcon, X, CheckCircle } from 'lucide-react';
 
 const KostEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -160,11 +161,10 @@ const KostEdit = () => {
           }
         );
       }
-
-      alert('Kost berhasil diupdate!');
-      navigate('/dashboard/owner');
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error updating kost:', error);
+      alert('❌ ' + (error.response?.data?.message || 'Gagal update kost'));
       alert(error.response?.data?.message || 'Gagal update kost');
     } finally {
       setSubmitting(false);
@@ -185,6 +185,37 @@ const KostEdit = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
+        {/* Success Dialog */}
+        {showSuccessDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all animate-in fade-in zoom-in duration-200">
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-green-100">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Kost Berhasil Diupdate!
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Perubahan data kost Anda telah berhasil disimpan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t">
+                <button
+                  onClick={() => navigate('/dashboard/owner')}
+                  className="flex-1 px-4 py-2.5 rounded-lg font-medium text-white transition-all duration-200 bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/30"
+                >
+                  Oke
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-6">
           <button
             onClick={() => navigate(-1)}
