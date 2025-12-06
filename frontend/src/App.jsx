@@ -20,6 +20,12 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import AdminKostDetail from './pages/AdminKostDetail';
 import VerifyEmail from './pages/VerifyEmail';
 
+// Wrapper component to provide reactive key for routes with params
+function RouteWrapper({ children }) {
+  const location = useLocation();
+  return <div key={location.pathname}>{children}</div>;
+}
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -63,14 +69,16 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/kost" element={<KostSearch />} />
-          <Route path="/kost/:id" element={<KostDetail />} />
-          <Route path="/booking/:id" element={<Booking key={window.location.pathname} />} />
+          <Route path="/kost/:id" element={<RouteWrapper><KostDetail /></RouteWrapper>} />
+          <Route path="/booking/:id" element={<RouteWrapper><Booking /></RouteWrapper>} />
           <Route 
             path="/payment/:bookingId" 
             element={
-              <ProtectedRoute>
-                <Payment />
-              </ProtectedRoute>
+              <RouteWrapper>
+                <ProtectedRoute>
+                  <Payment />
+                </ProtectedRoute>
+              </RouteWrapper>
             } 
           />
           <Route 
@@ -92,25 +100,31 @@ function App() {
           <Route 
             path="/bookings/:bookingId/payment/success" 
             element={
-              <ProtectedRoute>
-                <PaymentCallback />
-              </ProtectedRoute>
+              <RouteWrapper>
+                <ProtectedRoute>
+                  <PaymentCallback />
+                </ProtectedRoute>
+              </RouteWrapper>
             } 
           />
           <Route 
             path="/bookings/:bookingId/payment/pending" 
             element={
-              <ProtectedRoute>
-                <PaymentCallback />
-              </ProtectedRoute>
+              <RouteWrapper>
+                <ProtectedRoute>
+                  <PaymentCallback />
+                </ProtectedRoute>
+              </RouteWrapper>
             } 
           />
           <Route 
             path="/bookings/:bookingId/payment/error" 
             element={
-              <ProtectedRoute>
-                <PaymentCallback />
-              </ProtectedRoute>
+              <RouteWrapper>
+                <ProtectedRoute>
+                  <PaymentCallback />
+                </ProtectedRoute>
+              </RouteWrapper>
             } 
           />
           <Route 
@@ -124,9 +138,11 @@ function App() {
           <Route 
             path="/admin/kost/:id" 
             element={
-              <ProtectedRoute>
-                <AdminKostDetail />
-              </ProtectedRoute>
+              <RouteWrapper>
+                <ProtectedRoute>
+                  <AdminKostDetail />
+                </ProtectedRoute>
+              </RouteWrapper>
             } 
           />
           <Route 
@@ -140,9 +156,11 @@ function App() {
           <Route 
             path="/kost/edit/:id" 
             element={
-              <ProtectedRoute>
-                <KostEdit />
-              </ProtectedRoute>
+              <RouteWrapper>
+                <ProtectedRoute>
+                  <KostEdit />
+                </ProtectedRoute>
+              </RouteWrapper>
             } 
           />
           <Route 
@@ -156,9 +174,11 @@ function App() {
           <Route 
             path="/reservation/:id" 
             element={
-              <ProtectedRoute>
-                <ReservationDetail />
-              </ProtectedRoute>
+              <RouteWrapper>
+                <ProtectedRoute>
+                  <ReservationDetail />
+                </ProtectedRoute>
+              </RouteWrapper>
             } 
           />
         </Routes>

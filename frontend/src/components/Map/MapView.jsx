@@ -207,7 +207,10 @@ const MapView = ({
         style={{ width: '100%', height: '100%', borderRadius: '8px' }}
         scrollWheelZoom={true}
         zoomControl={true}
+        touchZoom={true}
+        doubleClickZoom={true}
         dragging={true}
+        tap={true}
       >
         <ChangeView center={finalCenter} zoom={zoom} />
         
