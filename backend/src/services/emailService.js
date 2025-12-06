@@ -20,7 +20,7 @@ const sendVerificationEmail = async (email, name, code) => {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'KostKu <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM_EMAIL || 'KostKu <noreply@kostku.online>',
       to: email,
       subject: 'Kode Verifikasi Email - KostKu',
       html: `
@@ -77,7 +77,7 @@ const sendKostApprovalEmail = async (ownerEmail, ownerName, kostName) => {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'KostKu <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM_EMAIL || 'KostKu <noreply@kostku.online>',
       to: ownerEmail,
       subject: 'Kost Anda Telah Disetujui - KostKu',
       html: `
