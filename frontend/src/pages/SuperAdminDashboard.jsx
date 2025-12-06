@@ -90,41 +90,44 @@ function SuperAdminDashboard() {
   };
 
   const handleApproveKost = async (kostId) => {
-    if (!window.confirm('Approve kost ini?')) return;
+    const confirmed = window.confirm('kostku-mp-project.vercel.app menyatakan:\n\nApprove kost ini? Kost akan langsung muncul di halaman publik.');
+    if (!confirmed) return;
 
     try {
       await api.put(`/admin/kost/${kostId}/approve`);
-      alert('Kost berhasil diapprove!');
+      alert('✅ Kost berhasil diapprove!');
       fetchDashboardData();
     } catch (error) {
       console.error('Error approving kost:', error);
-      alert(error.response?.data?.message || 'Gagal approve kost');
+      alert('❌ ' + (error.response?.data?.message || 'Gagal approve kost'));
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Hapus user ini? Tindakan ini tidak dapat dibatalkan.')) return;
+    const confirmed = window.confirm('kostku-mp-project.vercel.app menyatakan:\n\n⚠️ Hapus user ini?\n\nTindakan ini tidak dapat dibatalkan dan semua data terkait akan dihapus.');
+    if (!confirmed) return;
 
     try {
       await api.delete(`/admin/users/${userId}`);
-      alert('User berhasil dihapus!');
+      alert('✅ User berhasil dihapus!');
       fetchDashboardData();
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert(error.response?.data?.message || 'Gagal hapus user');
+      alert('❌ ' + (error.response?.data?.message || 'Gagal hapus user'));
     }
   };
 
   const handleDeleteKost = async (kostId) => {
-    if (!window.confirm('Hapus kost ini? Tindakan ini tidak dapat dibatalkan.')) return;
+    const confirmed = window.confirm('kostku-mp-project.vercel.app menyatakan:\n\n⚠️ Hapus kost ini?\n\nTindakan ini tidak dapat dibatalkan dan semua data terkait akan dihapus.');
+    if (!confirmed) return;
 
     try {
       await api.delete(`/admin/kost/${kostId}`);
-      alert('Kost berhasil dihapus!');
+      alert('✅ Kost berhasil dihapus!');
       fetchDashboardData();
     } catch (error) {
       console.error('Error deleting kost:', error);
-      alert(error.response?.data?.message || 'Gagal hapus kost');
+      alert('❌ ' + (error.response?.data?.message || 'Gagal hapus kost'));
     }
   };
 
