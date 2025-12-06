@@ -39,10 +39,10 @@ function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <Home className="h-5 w-5 text-primary-foreground" />
+            <div className="h-10 w-10 rounded-full bg-gray-900 flex items-center justify-center shadow-md">
+              <Home className="h-5 w-5 text-white" />
             </div>
-            <span>KostKu</span>
+            <span className="text-gray-900 font-bold">KostKu</span>
           </Link>
           
           {/* Desktop Menu */}
