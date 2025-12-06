@@ -219,7 +219,19 @@ function OwnerDashboard() {
                         className="h-16 w-16 rounded-lg object-cover"
                       />
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 truncate">{kost.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold text-gray-900 truncate">{kost.name}</h4>
+                          {!kost.is_approved && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 whitespace-nowrap">
+                              Menunggu Persetujuan
+                            </span>
+                          )}
+                          {kost.is_approved && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
+                              Disetujui
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600">{kost.city}</p>
                         <p className="text-sm font-medium text-blue-600 mt-1">
                           {formatCurrency(kost.price_monthly)}/bulan
