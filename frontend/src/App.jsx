@@ -11,6 +11,7 @@ import Booking from './pages/Booking';
 import Payment from './pages/Payment';
 import PaymentCallback from './pages/PaymentCallback';
 import OwnerDashboard from './pages/OwnerDashboard';
+import OwnerBookings from './pages/OwnerBookings';
 import BookingConfirmation from './pages/BookingConfirmation';
 import MyReservations from './pages/MyReservations';
 import ReservationDetail from './pages/ReservationDetail';
@@ -89,6 +90,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OwnerDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/owner/bookings" 
+            element={
+              <ProtectedRoute>
+                <OwnerBookings />
               </ProtectedRoute>
             } 
           />

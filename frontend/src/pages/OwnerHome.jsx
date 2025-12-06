@@ -10,14 +10,8 @@ import {
   Users, 
   Calendar, 
   DollarSign,
-  TrendingUp,
   FileText,
-  BarChart3,
-  CheckCircle,
-  Star,
-  Target,
-  Zap,
-  Clock
+  BarChart3
 } from 'lucide-react';
 
 function OwnerHome() {
@@ -308,7 +302,7 @@ function OwnerHome() {
             </div>
           </div>
 
-          {/* Right Column - Ringkasan & Tips */}
+          {/* Right Column - Ringkasan Performa */}
           <div className="space-y-6">
             {/* Ringkasan Performa */}
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
@@ -336,77 +330,6 @@ function OwnerHome() {
                 <div className="border-t border-blue-400 pt-4">
                   <p className="text-sm text-blue-100 mb-2">Booking Dikonfirmasi</p>
                   <p className="text-2xl font-bold">{stats.bookingPending}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Tips untuk Pemilik */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-yellow-100 p-2 rounded-lg">
-                  <Star className="h-5 w-5 text-yellow-600" />
-                </div>
-                <h2 className="text-lg font-semibold">Tips untuk Pemilik</h2>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <div className="bg-blue-100 p-2 rounded-lg h-fit">
-                    <Target className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm text-gray-900">Tingkatkan Rating</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Respon cepat dan kebersihan baik meningkatkan rating kost Anda.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="bg-green-100 p-2 rounded-lg h-fit">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm text-gray-900">Optimalkan Harga</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Sesuaikan harga dengan fasilitas dan lokasi untuk menarik lebih banyak penyewa.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="bg-orange-100 p-2 rounded-lg h-fit">
-                    <Clock className="h-4 w-4 text-orange-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm text-gray-900">Respon Cepat</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Konfirmasi booking dalam 24 jam untuk pengalaman penyewa yang lebih baik.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Checklist Pemilik */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">Checklist Pemilik</h2>
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                    myKosts.length > 0 ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                  }`}>
-                    {myKosts.length > 0 && <CheckCircle className="h-4 w-4 text-white" />}
-                  </div>
-                  <span className={`text-sm ${myKosts.length > 0 ? 'text-gray-900' : 'text-muted-foreground'}`}>
-                    Tambahkan kost pertama
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded border-2 border-gray-300"></div>
-                  <span className="text-sm text-muted-foreground">Konfirmasi semua booking</span>
                 </div>
               </div>
             </div>
