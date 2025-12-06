@@ -20,6 +20,17 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import AdminKostDetail from './pages/AdminKostDetail';
 import VerifyEmail from './pages/VerifyEmail';
 
+// Wrapper components to force remount on route change
+function KostDetailWrapper() {
+  const location = useLocation();
+  return <KostDetail key={location.pathname} />;
+}
+
+function BookingWrapper() {
+  const location = useLocation();
+  return <Booking key={location.pathname} />;
+}
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -63,8 +74,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/kost" element={<KostSearch />} />
-          <Route path="/kost/:id" element={<KostDetail />} />
-          <Route path="/booking/:id" element={<Booking />} />
+          <Route path="/kost/:id" element={<KostDetailWrapper />} />
+          <Route path="/booking/:id" element={<BookingWrapper />} />
           <Route 
             path="/payment/:bookingId" 
             element={

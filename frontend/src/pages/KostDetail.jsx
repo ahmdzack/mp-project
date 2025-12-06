@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { Button, Card, CardContent, Badge } from '../components/ui';
@@ -11,7 +11,6 @@ function KostDetail() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [kost, setKost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,13 +41,11 @@ function KostDetail() {
   };
 
   useEffect(() => {
-    console.log('🔄 KostDetail useEffect triggered for id:', id, 'key:', location.key);
-    // Reset state and fetch new data when id changes
-    setKost(null);
-    setSelectedImage(0);
+    console.log('🔄 KostDetail useEffect triggered for id:', id);
+    // Component will remount on route change due to key prop in wrapper
     fetchKostDetail();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, location.key]);
+  }, [id]);
 
   const handleBooking = () => {
     if (!user) {
