@@ -19,7 +19,6 @@ import KostEdit from './pages/KostEdit';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import AdminKostDetail from './pages/AdminKostDetail';
 import VerifyEmail from './pages/VerifyEmail';
-import VerifyPhone from './pages/VerifyPhone';
 
 // Wrapper components to force remount on route change
 function KostDetailWrapper() {
@@ -74,7 +73,6 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/verify-phone" element={<VerifyPhone />} />
           <Route path="/kost" element={<KostSearch />} />
           <Route path="/kost/:id" element={<KostDetailWrapper />} />
           <Route path="/booking/:id" element={<BookingWrapper />} />

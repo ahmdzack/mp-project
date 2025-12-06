@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Label, Alert, AlertDescription } from '../components/ui';
-import { Home, Loader2, Eye, EyeOff, Building2, Search, CheckCircle, Mail, Smartphone } from 'lucide-react';
+import { Home, Loader2, Eye, EyeOff, Building2, Search, CheckCircle, Mail } from 'lucide-react';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -19,7 +19,6 @@ function Register() {
   const [success, setSuccess] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [verificationType, setVerificationType] = useState('email'); // 'email' or 'phone'
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -49,14 +48,7 @@ function Register() {
 
     try {
       const { confirmPassword, ...registerData } = formData;
-      
-      // Add verification type to register data
-      const dataWithVerificationType = {
-        ...registerData,
-        verificationType: verificationType
-      };
-      
-      const response = await register(dataWithVerificationType);
+      const response = await register(registerData);
       
       console.log('📦 Register response:', response);
       
@@ -85,18 +77,9 @@ function Register() {
           console.log('🔢 VERIFICATION CODE:', data.verificationCode);
         }
         
-        // Auto-redirect to appropriate verify page
+        // Auto-redirect to verify page after 2 seconds
         setTimeout(() => {
-          if (verificationType === 'phone') {
-            navigate('/verify-phone', { 
-              state: { 
-                phone: formData.phone,
-                email: data.email 
-              } 
-            });
-          } else {
-            navigate('/verify-email', { state: { email: data.email } });
-          }
+          navigate('/verify-email', { state: { email: data.email } });
         }, 2000);
       } else {
         // Fallback - shouldn't happen
@@ -262,45 +245,6 @@ function Register() {
                 required
                 disabled={loading}
               />
-            </div>
-
-            {/* Verification Method Selection */}
-            <div className="space-y-3">
-              <Label>Metode Verifikasi</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setVerificationType('email')}
-                  className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-3 transition-all ${
-                    verificationType === 'email'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 bg-white hover:border-blue-300'
-                  }`}
-                  disabled={loading}
-                >
-                  <Mail className="h-5 w-5" />
-                  <span className="text-sm font-medium">Email</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setVerificationType('phone')}
-                  className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-3 transition-all ${
-                    verificationType === 'phone'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 bg-white hover:border-blue-300'
-                  }`}
-                  disabled={loading}
-                >
-                  <Smartphone className="h-5 w-5" />
-                  <span className="text-sm font-medium">SMS/WhatsApp</span>
-                </button>
-              </div>
-              <p className="text-xs text-gray-500">
-                {verificationType === 'email' 
-                  ? '✉️ Kode verifikasi akan dikirim ke email Anda' 
-                  : '📱 Kode verifikasi akan dikirim via SMS ke nomor telepon Anda'}
-              </p>
             </div>
 
             <div className="space-y-2">
