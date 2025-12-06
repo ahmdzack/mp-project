@@ -85,7 +85,7 @@ function OwnerHome() {
               Selamat Pagi, <span className="text-primary">{user?.name}</span>
             </h1>
             <p className="text-muted-foreground mt-2">
-              Kelola properti kost Anda dengan mudah dan pantau performa bisnis Anda secara real-time.
+              Kelola kost Anda dengan mudah dan pantau performa bisnis Anda secara real-time.
             </p>
           </div>
           <div className="flex gap-3">
@@ -127,7 +127,7 @@ function OwnerHome() {
             </div>
             <p className="text-sm text-muted-foreground mb-1">Total Kost</p>
             <p className="text-3xl font-bold text-gray-900">{stats.totalKost}</p>
-            <p className="text-xs text-muted-foreground mt-2">properti aktif</p>
+            <p className="text-xs text-muted-foreground mt-2">kost aktif</p>
           </div>
 
           {/* Kamar Tersedia */}
@@ -185,7 +185,7 @@ function OwnerHome() {
                   </div>
                   <div className="text-left">
                     <p className="font-semibold text-gray-900">Tambah Kost</p>
-                    <p className="text-xs text-muted-foreground">Daftarkan properti baru</p>
+                    <p className="text-xs text-muted-foreground">Daftarkan kost baru</p>
                   </div>
                 </button>
 
@@ -198,7 +198,7 @@ function OwnerHome() {
                   </div>
                   <div className="text-left">
                     <p className="font-semibold text-gray-900">Kelola Kost</p>
-                    <p className="text-xs text-muted-foreground">Edit properti Anda</p>
+                    <p className="text-xs text-muted-foreground">Edit kost Anda</p>
                   </div>
                 </button>
 
@@ -230,10 +230,10 @@ function OwnerHome() {
               </div>
             </div>
 
-            {/* Properti Saya */}
+            {/* Kost Saya */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Properti Saya</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Kost Saya</h2>
                 <Link to="/dashboard/owner" className="text-sm text-primary hover:underline flex items-center gap-1">
                   Lihat Semua
                   <span>→</span>
@@ -247,7 +247,7 @@ function OwnerHome() {
                     <Building2 className="h-10 w-10 text-gray-400" />
                   </div>
                   <p className="text-gray-600 font-medium mb-2">Belum Ada Kost</p>
-                  <p className="text-sm text-muted-foreground mb-4">Mulai daftarkan properti kost pertama Anda</p>
+                  <p className="text-sm text-muted-foreground mb-4">Mulai daftarkan kost pertama Anda</p>
                   <Button 
                     onClick={() => navigate('/dashboard/owner/kost/create')}
                     className="bg-primary hover:bg-primary/90"

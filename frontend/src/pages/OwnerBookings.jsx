@@ -171,7 +171,7 @@ function OwnerBookings() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Kelola Booking</h1>
-          <p className="text-muted-foreground">Lihat dan kelola semua booking untuk properti kost Anda</p>
+          <p className="text-muted-foreground">Lihat dan kelola semua booking untuk kost Anda</p>
         </div>
 
         {/* Stats Cards */}

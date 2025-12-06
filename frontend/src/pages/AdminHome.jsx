@@ -192,14 +192,14 @@ function AdminHome() {
             </p>
           </div>
 
-          {/* Total Properti */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border-l-4 border-green-500 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-green-100 p-3 rounded-lg">
-                <Building2 className="h-6 w-6 text-green-600" />
+          {/* Total Kost */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <Building2 className="h-6 w-6 text-blue-600" />
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-1">Total Properti</p>
+            <p className="text-sm text-muted-foreground mb-1">Total Kost</p>
             <p className="text-3xl font-bold text-gray-900 mb-2">{stats.totalKosts}</p>
             <p className="text-xs text-muted-foreground">
               {stats.availableRooms} kamar tersedia
@@ -271,7 +271,7 @@ function AdminHome() {
                     <Building2 className="h-6 w-6 text-green-600" />
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900">Kelola Properti</p>
+                    <p className="font-semibold text-gray-900">Kelola Kost</p>
                     <p className="text-xs text-muted-foreground">{stats.totalKosts} kost aktif</p>
                   </div>
                 </div>
@@ -356,7 +356,7 @@ function AdminHome() {
               <MapPin className="h-5 w-5 text-gray-700" />
               <h2 className="text-lg font-semibold">Distribusi Kost per Kota</h2>
             </div>
-            <p className="text-sm text-muted-foreground mb-6">Sebaran properti di berbagai kota</p>
+            <p className="text-sm text-muted-foreground mb-6">Sebaran kost di berbagai kota</p>
 
             <div className="space-y-4">
               {stats.kostsByCity.map((item, index) => {

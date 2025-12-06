@@ -224,7 +224,7 @@ const KostEdit = () => {
             ← Kembali
           </button>
           <h1 className="text-3xl font-bold text-gray-900 mt-4">Edit Kost</h1>
-          <p className="text-gray-600 mt-2">Perbarui informasi properti kost Anda</p>
+          <p className="text-gray-600 mt-2">Perbarui informasi kost Anda</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 space-y-6">

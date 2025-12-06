@@ -124,7 +124,7 @@ function OwnerDashboard() {
               <div>
                 <p className="text-sm text-gray-600">Total Kost</p>
                 <h3 className="text-3xl font-bold mt-2">{stats.totalKost}</h3>
-                <p className="text-xs text-gray-500 mt-1">properti terdaftar</p>
+                <p className="text-xs text-gray-500 mt-1">kost terdaftar</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                 <Building2 className="h-6 w-6 text-blue-600" />

@@ -51,9 +51,11 @@ function Navbar() {
               Beranda
             </Link>
             
-            <Link to="/kost" className="text-sm font-medium hover:text-primary hover:font-semibold transition-all">
-              Cari Kost
-            </Link>
+            {user?.role !== 'admin' && (
+              <Link to="/kost" className="text-sm font-medium hover:text-primary hover:font-semibold transition-all">
+                Cari Kost
+              </Link>
+            )}
             
             {user && user.role === 'pencari' && (
               <Link to="/reservations" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
@@ -103,17 +105,6 @@ function Navbar() {
                             </p>
                           )}
                         </div>
-                        
-                        {user.role === 'admin' && (
-                          <Link
-                            to="/dashboard/admin"
-                            onClick={() => setIsDropdownOpen(false)}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors"
-                          >
-                            <LayoutDashboard className="h-4 w-4" />
-                            Dashboard Admin
-                          </Link>
-                        )}
                         
                         {user.role === 'pemilik' && (
                           <Link
@@ -188,23 +179,13 @@ function Navbar() {
                 Beranda
               </Link>
               
-              <Link 
-                to="/kost" 
-                className="text-sm font-medium hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Cari Kost
-              </Link>
-              
-              {/* Admin Dashboard Link */}
-              {user && user.role === 'admin' && (
+              {user?.role !== 'admin' && (
                 <Link 
-                  to="/dashboard/admin" 
-                  className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                  to="/kost" 
+                  className="text-sm font-medium hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard Admin
+                  Cari Kost
                 </Link>
               )}
               

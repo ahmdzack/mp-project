@@ -19,6 +19,8 @@ import KostCreate from './pages/KostCreate';
 import KostEdit from './pages/KostEdit';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import AdminKostDetail from './pages/AdminKostDetail';
+import AdminUsers from './pages/AdminUsers';
+import AdminReservations from './pages/AdminReservations';
 import VerifyEmail from './pages/VerifyEmail';
 
 // Wrapper components to force remount on route change
@@ -138,6 +140,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <SuperAdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/admin/users" 
+            element={
+              <ProtectedRoute>
+                <AdminUsers />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/admin/reservations" 
+            element={
+              <ProtectedRoute>
+                <AdminReservations />
               </ProtectedRoute>
             } 
           />
