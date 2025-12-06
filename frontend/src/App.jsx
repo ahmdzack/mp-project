@@ -4,7 +4,7 @@ import Navbar from './components/Navbar';
 import ScrollToTop from './components/ScrollToTop';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Home from './pages/Home';
+import HomeRouter from './pages/HomeRouter';
 import KostSearch from './pages/KostSearch';
 import KostDetail from './pages/KostDetail';
 import Booking from './pages/Booking';
@@ -69,7 +69,7 @@ function App() {
         <ScrollToTop />
         <Navbar />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomeRouter />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />

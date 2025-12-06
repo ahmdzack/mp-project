@@ -565,6 +565,50 @@ const updateAvailableRooms = async (req, res) => {
   }
 };
 
+// @desc    Get owner's kosts
+// @route   GET /api/kost/my-kosts
+// @access  Private (Pemilik only)
+const getMyKosts = async (req, res) => {
+  try {
+    const kosts = await Kost.findAll({
+      where: { owner_id: req.user.id },
+      include: [
+        { model: Category, as: 'Category', attributes: ['id', 'name'] },
+        { model: KostType, as: 'KostType', attributes: ['id', 'name'] },
+        { model: Facility, as: 'facilities', attributes: ['id', 'name', 'icon'] },
+        { 
+          model: KostImage, 
+          as: 'images', 
+          attributes: ['id', 'image_url', 'is_primary'],
+          separate: true,
+          order: [['is_primary', 'DESC']]
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    const kostsWithImages = kosts.map(kost => {
+      const kostJSON = kost.toJSON();
+      kostJSON.primary_image = kostJSON.images?.find(img => img.is_primary)?.image_url || null;
+      kostJSON.status = kost.is_approved ? 'active' : 'pending';
+      return kostJSON;
+    });
+
+    res.json({
+      success: true,
+      count: kostsWithImages.length,
+      data: kostsWithImages
+    });
+
+  } catch (error) {
+    console.error('Get my kosts error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   createKost,
   getAllKost,
@@ -572,5 +616,6 @@ module.exports = {
   updateKost,
   deleteKost,
   approveKost,
-  updateAvailableRooms
+  updateAvailableRooms,
+  getMyKosts
 };
