@@ -40,6 +40,11 @@ function KostDetail() {
 
   useEffect(() => {
     console.log('🔄 KostDetail useEffect triggered for id:', id);
+    // Reset state when id changes
+    setLoading(true);
+    setError('');
+    setKost(null);
+    setSelectedImage(0);
     fetchKostDetail();
   }, [id, fetchKostDetail]);
 

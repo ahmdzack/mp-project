@@ -204,13 +204,15 @@ const MapView = ({
       <MapContainer
         center={finalCenter}
         zoom={zoom}
-        style={{ width: '100%', height: '100%', borderRadius: '8px' }}
+        style={{ width: '100%', height: '100%', borderRadius: '8px', zIndex: 0 }}
         scrollWheelZoom={true}
         zoomControl={true}
         touchZoom={true}
         doubleClickZoom={true}
         dragging={true}
         tap={true}
+        keyboard={true}
+        boxZoom={true}
       >
         <ChangeView center={finalCenter} zoom={zoom} />
         
