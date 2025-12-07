@@ -41,16 +41,32 @@ function OwnerHome() {
       const kostsData = kostsResponse.data.data || [];
       setMyKosts(kostsData);
 
+      // Fetch bookings
+      const bookingsResponse = await api.get('/bookings');
+      const allBookings = bookingsResponse.data.data || [];
+      
+      // Filter bookings for owner's kosts
+      const myKostIds = kostsData.map(k => k.id);
+      const myBookings = allBookings.filter(b => myKostIds.includes(b.kost_id));
+      setRecentBookings(myBookings.slice(0, 5)); // Show 5 recent bookings
+
       // Calculate stats
       const activeKosts = kostsData.filter(k => k.status === 'active');
       const totalRooms = kostsData.reduce((sum, k) => sum + (k.available_rooms || 0), 0);
+      const bookingPending = myBookings.filter(b => b.status === 'pending').length;
+      const confirmedBookings = myBookings.filter(b => b.status === 'confirmed');
+      const totalIncome = confirmedBookings.reduce((sum, b) => sum + (Number(b.total_price) || 0), 0);
+      
+      // Calculate tingkat hunian
+      const totalAllRooms = kostsData.reduce((sum, k) => sum + (k.total_rooms || 0), 0);
+      const occupancyRate = totalAllRooms > 0 ? Math.round(((totalAllRooms - totalRooms) / totalAllRooms) * 100) : 0;
       
       setStats({
         totalKost: activeKosts.length,
         kamaTersedia: totalRooms,
-        bookingPending: 0, // Will be updated when booking API is ready
-        totalPendapatan: 0, // Will be calculated from actual bookings
-        tingkatHunian: totalRooms > 0 ? 0 : 0 // Will be calculated
+        bookingPending: bookingPending,
+        totalPendapatan: totalIncome,
+        tingkatHunian: occupancyRate
       });
 
       setLoading(false);
@@ -96,7 +112,10 @@ function OwnerHome() {
               <Plus className="h-4 w-4 mr-2" />
               Tambah Kost Baru
             </Button>
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/dashboard/owner/bookings')}
+            >
               <Bell className="h-4 w-4 mr-2" />
               Lihat Booking
             </Button>
@@ -210,21 +229,21 @@ function OwnerHome() {
                     <Calendar className="h-6 w-6 text-orange-600" />
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900">Booking</p>
+                    <p className="font-semibold text-gray-900">Lihat Booking</p>
                     <p className="text-xs text-muted-foreground">Konfirmasi pemesanan</p>
                   </div>
                 </button>
 
                 <button
-                  onClick={() => navigate('/dashboard/owner')}
+                  onClick={() => navigate('/dashboard/owner/kost')}
                   className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-purple-50 transition-all"
                 >
                   <div className="bg-purple-100 p-3 rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-purple-600" />
+                    <Building2 className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900">Dashboard</p>
-                    <p className="text-xs text-muted-foreground">Lihat statistik lengkap</p>
+                    <p className="font-semibold text-gray-900">Lihat Semua Kost</p>
+                    <p className="text-xs text-muted-foreground">Daftar lengkap kost Anda</p>
                   </div>
                 </button>
               </div>
@@ -234,7 +253,7 @@ function OwnerHome() {
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Kost Saya</h2>
-                <Link to="/dashboard/owner" className="text-sm text-primary hover:underline flex items-center gap-1">
+                <Link to="/dashboard/owner/kost" className="text-sm text-primary hover:underline flex items-center gap-1">
                   Lihat Semua
                   <span>→</span>
                 </Link>
@@ -332,6 +351,55 @@ function OwnerHome() {
                   <p className="text-2xl font-bold">{stats.bookingPending}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Booking Terbaru */}
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Booking Terbaru</h2>
+                <Link to="/dashboard/owner/bookings" className="text-sm text-primary hover:underline flex items-center gap-1">
+                  Lihat Semua
+                  <span>→</span>
+                </Link>
+              </div>
+              
+              {recentBookings.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Calendar className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 font-medium mb-1">Belum Ada Booking</p>
+                  <p className="text-sm text-muted-foreground">Booking akan muncul di sini</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentBookings.map((booking) => (
+                    <div 
+                      key={booking.id}
+                      className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/owner/bookings')}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {booking.kost_name || 'Kost'}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                          booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {booking.status === 'confirmed' ? 'Terkonfirmasi' :
+                           booking.status === 'pending' ? 'Pending' : 'Dibatalkan'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{booking.user_name || 'Penyewa'}</p>
+                      <p className="text-sm font-medium text-blue-600 mt-1">
+                        Rp {(Number(booking.total_price) || 0).toLocaleString('id-ID')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

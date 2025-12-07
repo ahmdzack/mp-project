@@ -189,15 +189,15 @@ function Navbar() {
                 </Link>
               )}
               
-              {/* Owner Dashboard Link */}
+              {/* Owner Beranda Link */}
               {user && user.role === 'pemilik' && (
                 <Link 
-                  to="/dashboard/owner" 
+                  to="/dashboard/owner/home" 
                   className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard Owner
+                  Beranda
                 </Link>
               )}
               

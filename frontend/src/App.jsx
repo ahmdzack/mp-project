@@ -11,6 +11,8 @@ import Booking from './pages/Booking';
 import Payment from './pages/Payment';
 import PaymentCallback from './pages/PaymentCallback';
 import OwnerDashboard from './pages/OwnerDashboard';
+import OwnerHome from './pages/OwnerHome';
+import OwnerKostList from './pages/OwnerKostList';
 import OwnerBookings from './pages/OwnerBookings';
 import BookingConfirmation from './pages/BookingConfirmation';
 import MyReservations from './pages/MyReservations';
@@ -96,10 +98,42 @@ function App() {
             } 
           />
           <Route 
+            path="/dashboard/owner/home" 
+            element={
+              <ProtectedRoute>
+                <OwnerHome />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/owner/kost" 
+            element={
+              <ProtectedRoute>
+                <OwnerKostList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/dashboard/owner/bookings" 
             element={
               <ProtectedRoute>
                 <OwnerBookings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/owner/kost/create" 
+            element={
+              <ProtectedRoute>
+                <KostCreate />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/owner/kost/edit/:id" 
+            element={
+              <ProtectedRoute>
+                <KostEdit />
               </ProtectedRoute>
             } 
           />
@@ -164,22 +198,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminKostDetail />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/kost/create" 
-            element={
-              <ProtectedRoute>
-                <KostCreate />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/kost/edit/:id" 
-            element={
-              <ProtectedRoute>
-                <KostEdit />
               </ProtectedRoute>
             } 
           />
