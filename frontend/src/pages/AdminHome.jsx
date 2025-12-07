@@ -381,59 +381,21 @@ function AdminHome() {
             </div>
           </div>
 
-          {/* Kesehatan Platform & Stats Cepat */}
-          <div className="space-y-6">
-            {/* Kesehatan Platform */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity className="h-5 w-5 text-gray-700" />
-                <h2 className="text-lg font-semibold">Kesehatan Platform</h2>
+          {/* Statistik Cepat */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h3 className="font-semibold mb-4">Statistik Cepat</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Pemilik Aktif</span>
+                <span className="text-sm font-bold text-gray-900">{stats.usersByRole.pemilik}</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-6">Indikator performa sistem</p>
-
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Sistem Berjalan Normal</p>
-                  <p className="text-xs text-muted-foreground">Semua layanan aktif</p>
-                </div>
-                <CheckCircle className="h-6 w-6 text-green-500 ml-auto" />
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Pencari Aktif</span>
+                <span className="text-sm font-bold text-gray-900">{stats.usersByRole.pencari}</span>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">Rp {stats.totalRevenue.toLocaleString('id-ID')}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Total Transaksi</p>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <Eye className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.reservationStatus.confirmed > 0 
-                      ? ((stats.reservationStatus.confirmed / stats.totalReservations) * 100).toFixed(0)
-                      : 0}%
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Tingkat Konversi</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Statistik Cepat */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="font-semibold mb-4">Statistik Cepat</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Pemilik Aktif</span>
-                  <span className="text-sm font-bold text-gray-900">{stats.usersByRole.pemilik}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Pencari Aktif</span>
-                  <span className="text-sm font-bold text-gray-900">{stats.usersByRole.pencari}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Kamar Tersedia</span>
-                  <span className="text-sm font-bold text-gray-900">{stats.availableRooms}</span>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Kamar Tersedia</span>
+                <span className="text-sm font-bold text-gray-900">{stats.availableRooms}</span>
               </div>
             </div>
           </div>
