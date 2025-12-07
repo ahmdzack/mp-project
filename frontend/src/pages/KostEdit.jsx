@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
-import { MapPin, Home, DollarSign, Image as ImageIcon, X, CheckCircle } from 'lucide-react';
+import { MapPin, Home, DollarSign, Image as ImageIcon, X, CheckCircle, ArrowLeft } from 'lucide-react';
+import MapPicker from '../components/MapPicker';
 
 const KostEdit = () => {
   const { id } = useParams();
@@ -219,11 +220,12 @@ const KostEdit = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
           >
-            ← Kembali
+            <ArrowLeft className="h-5 w-5" />
+            Kembali
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 mt-4">Edit Kost</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Edit Kost</h1>
           <p className="text-gray-600 mt-2">Perbarui informasi kost Anda</p>
         </div>
 
@@ -329,31 +331,105 @@ const KostEdit = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Kota <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Makassar"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Kecamatan <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="district"
+                  value={formData.district}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Contoh: Tamalanrea"
+                />
+              </div>
+            </div>
+
+            {/* Map Picker */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <MapPin className="inline h-4 w-4 mr-1" />
+                Lokasi Kost (Klik pada peta untuk memilih lokasi)
+              </label>
+              <MapPicker
+                latitude={formData.latitude}
+                longitude={formData.longitude}
+                onLocationChange={(lat, lng) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    latitude: lat.toString(),
+                    longitude: lng.toString()
+                  }));
+                }}
+              />
+            </div>
+          </div>
+        </div>          {/* Pricing & Rooms */}
+          <div className="border-b pb-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Harga & Kamar
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Kota *
+                    Harga Mingguan
                   </label>
                   <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
+                    type="number"
+                    name="price_weekly"
+                    value={formData.price_weekly}
                     onChange={handleChange}
-                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="300000"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Kecamatan *
+                    Harga Bulanan <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text"
-                    name="district"
-                    value={formData.district}
+                    type="number"
+                    name="price_monthly"
+                    value={formData.price_monthly}
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="1000000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Harga Tahunan
+                  </label>
+                  <input
+                    type="number"
+                    name="price_yearly"
+                    value={formData.price_yearly}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="10000000"
                   />
                 </div>
               </div>
@@ -361,241 +437,158 @@ const KostEdit = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Latitude
+                    Total Kamar <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text"
-                    name="latitude"
-                    value={formData.latitude}
+                    type="number"
+                    name="total_rooms"
+                    value={formData.total_rooms}
                     onChange={handleChange}
+                    required
+                    min="1"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="-6.200000"
+                    placeholder="10"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Longitude
+                    Kamar Tersedia <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text"
-                    name="longitude"
-                    value={formData.longitude}
+                    type="number"
+                    name="available_rooms"
+                    value={formData.available_rooms}
                     onChange={handleChange}
+                    required
+                    min="0"
+                    max={formData.total_rooms}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="106.816666"
+                    placeholder="10"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Pricing */}
-          <div className="border-b pb-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Harga
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Harga per Minggu
-                </label>
-                <input
-                  type="number"
-                  name="price_weekly"
-                  value={formData.price_weekly}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="100000"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Harga per Bulan *
-                </label>
-                <input
-                  type="number"
-                  name="price_monthly"
-                  value={formData.price_monthly}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="500000"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Harga per Tahun
-                </label>
-                <input
-                  type="number"
-                  name="price_yearly"
-                  value={formData.price_yearly}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="5000000"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Rooms */}
-          <div className="border-b pb-6">
-            <h2 className="text-xl font-semibold mb-4">Kamar</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Total Kamar *
-                </label>
-                <input
-                  type="number"
-                  name="total_rooms"
-                  value={formData.total_rooms}
-                  onChange={handleChange}
-                  required
-                  min="1"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kamar Tersedia *
-                </label>
-                <input
-                  type="number"
-                  name="available_rooms"
-                  value={formData.available_rooms}
-                  onChange={handleChange}
-                  required
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Facilities */}
-          <div className="border-b pb-6">
+          {/* Fasilitas */}
+          <div>
             <h2 className="text-xl font-semibold mb-4">Fasilitas</h2>
-            
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {facilities.map(facility => (
                 <label
                   key={facility.id}
-                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                  className={`flex items-center gap-2 p-3 border rounded-lg cursor-pointer transition-colors ${
+                    formData.facilities.includes(facility.id)
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
                 >
                   <input
                     type="checkbox"
                     checked={formData.facilities.includes(facility.id)}
                     onChange={() => handleFacilityToggle(facility.id)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="rounded text-blue-500"
                   />
-                  <span className="text-sm text-gray-700">{facility.name}</span>
+                  <span className="text-sm">{facility.name}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* Images */}
+          {/* Gambar */}
           <div>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <ImageIcon className="h-5 w-5" />
               Gambar Kost
             </h2>
 
-            {/* Existing Images */}
-            {existingImages.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">Gambar Saat Ini:</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {existingImages
-                    .filter(img => !imagesToDelete.includes(img.id))
-                    .map(image => (
-                      <div key={image.id} className="relative group">
+            <div className="space-y-4">
+              {/* Existing Images */}
+              {existingImages.length > 0 && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Gambar Saat Ini:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {existingImages
+                      .filter(img => !imagesToDelete.includes(img.id))
+                      .map(image => (
+                        <div key={image.id} className="relative group">
+                          <img
+                            src={image.image_url}
+                            alt="Kost"
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveExistingImage(image.id)}
+                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New Images Preview */}
+              {imagePreviews.length > 0 && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Gambar Baru:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
                         <img
-                          src={image.image_url}
-                          alt="Kost"
-                          className="w-full h-40 object-cover rounded-lg"
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
                         />
                         <button
                           type="button"
-                          onClick={() => handleRemoveExistingImage(image.id)}
+                          onClick={() => handleRemoveNewImage(index)}
                           className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="h-4 w-4" />
                         </button>
                       </div>
                     ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* New Images Preview */}
-            {imagePreviews.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">Gambar Baru:</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={preview}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-40 object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveNewImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              {/* Upload Button */}
+              <div className="flex items-center gap-4">
+                <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                  <ImageIcon className="h-5 w-5" />
+                  Tambah Gambar
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+                <span className="text-sm text-gray-600">Maksimal 5 gambar</span>
               </div>
-            )}
-
-            {/* Upload Button */}
-            <div>
-              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">
-                <ImageIcon className="h-5 w-5" />
-                Tambah Gambar
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-              <p className="text-xs text-gray-500 mt-2">
-                Maksimal 5 gambar. Format: JPG, PNG. Ukuran maks: 5MB per gambar
-              </p>
             </div>
           </div>
 
-          {/* Submit Buttons */}
-          <div className="flex gap-4 pt-6">
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard/owner')}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              disabled={submitting}
-            >
-              Batal
-            </button>
+          {/* Submit Button */}
+          <div className="flex items-center gap-4 pt-4 border-t">
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? 'Menyimpan...' : 'Simpan Perubahan'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard/owner')}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Batal
             </button>
           </div>
         </form>
