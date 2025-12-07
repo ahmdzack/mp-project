@@ -106,17 +106,6 @@ function Navbar() {
                           )}
                         </div>
                         
-                        {user.role === 'pemilik' && (
-                          <Link
-                            to="/dashboard/owner"
-                            onClick={() => setIsDropdownOpen(false)}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors"
-                          >
-                            <LayoutDashboard className="h-4 w-4" />
-                            Dashboard
-                          </Link>
-                        )}
-                        
                         {user.role === 'pencari' && (
                           <Link
                             to="/reservations"
