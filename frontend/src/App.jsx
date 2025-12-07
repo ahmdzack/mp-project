@@ -10,7 +10,6 @@ import KostDetail from './pages/KostDetail';
 import Booking from './pages/Booking';
 import Payment from './pages/Payment';
 import PaymentCallback from './pages/PaymentCallback';
-import OwnerDashboard from './pages/OwnerDashboard';
 import OwnerHome from './pages/OwnerHome';
 import OwnerKostList from './pages/OwnerKostList';
 import OwnerBookings from './pages/OwnerBookings';
@@ -91,11 +90,7 @@ function App() {
           />
           <Route 
             path="/dashboard/owner" 
-            element={
-              <ProtectedRoute>
-                <OwnerDashboard />
-              </ProtectedRoute>
-            } 
+            element={<Navigate to="/dashboard/owner/home" replace />}
           />
           <Route 
             path="/dashboard/owner/home" 

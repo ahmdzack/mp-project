@@ -9,9 +9,7 @@ import {
   Building2, 
   Users, 
   Calendar, 
-  DollarSign,
-  FileText,
-  BarChart3
+  DollarSign
 } from 'lucide-react';
 
 function OwnerHome() {
@@ -122,19 +120,6 @@ function OwnerHome() {
           </div>
         </div>
 
-        {/* Hero Image Card */}
-        <div className="mb-8 relative overflow-hidden rounded-2xl shadow-lg">
-          <img 
-            src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=400&fit=crop" 
-            alt="Hero" 
-            className="w-full h-[300px] md:h-[400px] object-cover"
-          />
-          <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
-            <p className="text-sm text-muted-foreground mb-1">Total Pendapatan Bulan Ini</p>
-            <p className="text-3xl font-bold text-gray-900">Rp {stats.totalPendapatan.toLocaleString('id-ID')}</p>
-          </div>
-        </div>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Kost */}
@@ -194,7 +179,7 @@ function OwnerHome() {
               <h2 className="text-xl font-semibold mb-4">Aksi Cepat</h2>
               <p className="text-sm text-muted-foreground mb-6">Kelola bisnis kost Anda dengan cepat</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => navigate('/dashboard/owner/kost/create')}
                   className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-all"
@@ -205,19 +190,6 @@ function OwnerHome() {
                   <div className="text-left">
                     <p className="font-semibold text-gray-900">Tambah Kost</p>
                     <p className="text-xs text-muted-foreground">Daftarkan kost baru</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/dashboard/owner')}
-                  className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-primary hover:bg-green-50 transition-all"
-                >
-                  <div className="bg-green-100 p-3 rounded-lg">
-                    <FileText className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900">Kelola Kost</p>
-                    <p className="text-xs text-muted-foreground">Edit kost Anda</p>
                   </div>
                 </button>
 
