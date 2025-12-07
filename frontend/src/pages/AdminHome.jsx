@@ -293,22 +293,6 @@ function AdminHome() {
                 </div>
                 <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-yellow-600" />
               </button>
-
-              <button
-                onClick={() => navigate('/dashboard/admin/analytics')}
-                className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="bg-purple-100 p-3 rounded-lg group-hover:bg-purple-200 transition-colors">
-                    <BarChart3 className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900">Dashboard Analitik</p>
-                    <p className="text-xs text-muted-foreground">Lihat laporan lengkap</p>
-                  </div>
-                </div>
-                <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600" />
-              </button>
             </div>
           </div>
 
