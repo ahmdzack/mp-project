@@ -520,6 +520,84 @@ const checkVerificationStatus = async (req, res) => {
   }
 };
 
+// @desc    Google OAuth Login
+// @route   POST /api/auth/google
+// @access  Public
+const googleAuth = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google credential is required'
+      });
+    }
+
+    // Verify Google token
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+    
+    const payload = ticket.getPayload();
+    const { sub: google_id, email, name, picture } = payload;
+
+    // Check if user exists
+    let user = await User.findOne({ 
+      where: { 
+        email 
+      } 
+    });
+
+    if (user) {
+      // Update existing user with Google info if not already set
+      if (!user.google_id) {
+        await user.update({
+          google_id,
+          provider: 'google',
+          avatar: picture,
+          email_verified: true // Google emails are pre-verified
+        });
+      }
+    } else {
+      // Create new user
+      user = await User.create({
+        name,
+        email,
+        google_id,
+        provider: 'google',
+        avatar: picture,
+        email_verified: true, // Google emails are pre-verified
+        role: 'pencari'
+      });
+    }
+
+    // Generate token
+    const token = generateToken(user.id, user.role);
+
+    res.status(200).json({
+      success: true,
+      message: 'Google login successful',
+      data: {
+        user,
+        token
+      }
+    });
+
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Google authentication failed',
+      error: error.message
+    });
+  }
+};
+
 // Export all functions
 module.exports = {
   register,
@@ -529,5 +607,6 @@ module.exports = {
   checkVerificationStatus,
   getMe,
   sendPhoneVerification,
-  verifyPhone
+  verifyPhone,
+  googleAuth
 };

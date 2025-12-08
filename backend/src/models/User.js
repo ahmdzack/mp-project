@@ -41,14 +41,31 @@ module.exports = (sequelize) => {
     },
     password: {
       type: DataTypes.STRING(255),
-      allowNull: false,
+      allowNull: true, // Allow null for Google OAuth users
       validate: {
-        notEmpty: { msg: 'Password is required' },
-        len: {
-          args: [6, 255],
-          msg: 'Password must be at least 6 characters'
+        customValidator(value) {
+          // Only require password if not using OAuth
+          if (!this.google_id && !value) {
+            throw new Error('Password is required');
+          }
+          if (value && value.length < 6) {
+            throw new Error('Password must be at least 6 characters');
+          }
         }
       }
+    },
+    google_id: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true
+    },
+    provider: {
+      type: DataTypes.ENUM('local', 'google'),
+      defaultValue: 'local'
+    },
+    avatar: {
+      type: DataTypes.STRING(500),
+      allowNull: true
     },
     role: {
       type: DataTypes.ENUM('pencari', 'pemilik', 'admin'),

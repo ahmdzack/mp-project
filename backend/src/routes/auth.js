@@ -8,7 +8,8 @@ const {
   checkVerificationStatus,
   getMe,
   sendPhoneVerification,
-  verifyPhone
+  verifyPhone,
+  googleAuth
 } = require('../controllers/authController');
 const { registerValidator, loginValidator } = require('../validators/authValidator');
 const { handleValidationErrors } = require('../middlewares/errorHandler');
@@ -17,6 +18,7 @@ const { protect } = require('../middlewares/auth');
 // Public routes
 router.post('/register', registerValidator, handleValidationErrors, register);
 router.post('/login', loginValidator, handleValidationErrors, login);
+router.post('/google', googleAuth); // Google OAuth route
 router.post('/verify-email', verifyEmail); // Changed from GET to POST
 router.post('/resend-verification', resendVerification); // Now public, accepts email in body
 router.post('/check-verification', checkVerificationStatus); // New endpoint

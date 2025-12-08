@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import api from '../api/axios';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Label, Alert, AlertDescription } from '../components/ui';
 import { Home, Loader2, Eye, EyeOff, Mail, CheckCircle, RefreshCw } from 'lucide-react';
@@ -95,6 +96,34 @@ function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data } = await api.post('/auth/google', {
+        credential: credentialResponse.credential
+      });
+
+      // Save token and user data
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.user));
+
+      // Redirect to home
+      navigate('/');
+      window.location.reload(); // Refresh to update auth context
+    } catch (err) {
+      console.error('Google login error:', err);
+      setError(err.response?.data?.message || 'Google login gagal. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google login gagal. Silakan coba lagi.');
   };
 
   return (
@@ -213,6 +242,27 @@ function Login() {
               {loading ? 'Memproses...' : 'Login'}
             </Button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">Atau lanjutkan dengan</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              useOneTap
+              text="signin_with"
+              shape="rectangular"
+              size="large"
+              width="100%"
+            />
+          </div>
 
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Belum punya akun? </span>
