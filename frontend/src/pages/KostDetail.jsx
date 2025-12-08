@@ -15,16 +15,17 @@ function KostDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState(0);
+  
+  // STATE BARU: Untuk mendeteksi proses pindah halaman
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  // Memoize map center to prevent re-creation on every render
+  // Memoize map center
   const mapCenter = useMemo(() => {
     if (kost?.latitude && kost?.longitude) {
       return [parseFloat(kost.latitude), parseFloat(kost.longitude)];
     }
-    return [-5.1477, 119.4327]; // Default Makassar
-  }, [kost?.latitude, kost?.longitude]); 
-
-  console.log('🏠 KostDetail render:', { id, hasUser: !!user, kost: kost?.name });
+    return [-5.1477, 119.4327]; 
+  }, [kost?.latitude, kost?.longitude]);
 
   const fetchKostDetail = async (signal) => {
     try {
@@ -42,12 +43,12 @@ function KostDetail() {
   };
 
   useEffect(() => {
-    console.log('🔄 KostDetail useEffect triggered for id:', id);
-    // Reset UI immediately on id change
     setKost(null);
     setSelectedImage(0);
     setError('');
     setLoading(true);
+    // Reset navigating state saat halaman dimuat
+    setIsNavigating(false);
 
     const controller = new AbortController();
     fetchKostDetail(controller.signal);
@@ -55,7 +56,6 @@ function KostDetail() {
     return () => {
       controller.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleBooking = () => {
@@ -63,9 +63,16 @@ function KostDetail() {
       navigate('/login');
       return;
     }
-    // Force navigation and scroll to top
-    navigate(`/booking/${id}`, { replace: false });
-    window.scrollTo(0, 0);
+
+    // TRICK: Hapus Map dulu dari tampilan
+    setIsNavigating(true);
+
+    // Tunggu sejenak (100ms) baru pindah halaman
+    // Ini memberi waktu bagi Map untuk "clean up" sebelum Router bekerja
+    setTimeout(() => {
+      navigate(`/booking/${id}`, { replace: false });
+      window.scrollTo(0, 0);
+    }, 100);
   };
 
   const getFacilityIcon = (facilityName) => {
@@ -111,7 +118,6 @@ function KostDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Back Button */}
         <Button 
           variant="ghost" 
           className="mb-4"
@@ -122,9 +128,7 @@ function KostDetail() {
         </Button>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left Column - Gallery & Info */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Gallery Section */}
             <Card className="overflow-hidden">
               <div className="relative aspect-[16/10] bg-muted">
                 {images.length > 0 ? (
@@ -170,7 +174,6 @@ function KostDetail() {
               )}
             </Card>
 
-            {/* Info Section */}
             <Card>
               <CardContent className="pt-6 space-y-6">
                 <div>
@@ -200,10 +203,7 @@ function KostDetail() {
                   {facilities.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {facilities.map((facility) => (
-                        <div 
-                          key={facility.id} 
-                          className="flex items-center gap-2 text-sm"
-                        >
+                        <div key={facility.id} className="flex items-center gap-2 text-sm">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                             {getFacilityIcon(facility.name)}
                           </div>
@@ -234,18 +234,18 @@ function KostDetail() {
                   </div>
                 </div>
 
-                {/* Lokasi Map Section */}
-                {kost.latitude && kost.longitude && (
+                {/* Lokasi Map Section - DENGAN LOGIKA !isNavigating */}
+                {kost.latitude && kost.longitude && !isNavigating && (
                   <div className="border-t pt-6">
                     <h2 className="text-xl font-semibold mb-4">Lokasi</h2>
                     <div className="rounded-lg overflow-hidden border">
                       <MapView
-                      key={`${id}-${mapCenter[0]}-${mapCenter[1]}`}
-                      singleKost={kost}
-                      center={mapCenter}
-                      zoom={15}
-                      height="300px"
-                      showUserLocation={true}
+                        key={`${id}-${mapCenter[0]}-${mapCenter[1]}`}
+                        singleKost={kost}
+                        center={mapCenter}
+                        zoom={15}
+                        height="300px"
+                        showUserLocation={true}
                       />
                     </div>
                     <div className="mt-3 text-sm text-muted-foreground">
@@ -258,7 +258,6 @@ function KostDetail() {
             </Card>
           </div>
 
-          {/* Right Column - Booking Card (Sticky) */}
           <div className="lg:col-span-1">
             <Card className="sticky top-20">
               <CardContent className="pt-6 space-y-4">
@@ -293,9 +292,16 @@ function KostDetail() {
                   className="w-full"
                   size="lg"
                   onClick={handleBooking}
-                  disabled={kost.available_rooms <= 0}
+                  disabled={kost.available_rooms <= 0 || isNavigating}
                 >
-                  {kost.available_rooms > 0 ? 'Booking Sekarang' : 'Tidak Tersedia'}
+                  {isNavigating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    kost.available_rooms > 0 ? 'Booking Sekarang' : 'Tidak Tersedia'
+                  )}
                 </Button>
 
                 {!user && (
