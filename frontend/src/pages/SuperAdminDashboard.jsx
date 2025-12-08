@@ -15,7 +15,9 @@ import {
   Search,
   Filter,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Check,
+  X
 } from 'lucide-react';
 
 function SuperAdminDashboard() {
@@ -37,6 +39,7 @@ function SuperAdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterKostStatus, setFilterKostStatus] = useState('all');
+  const [approveDialog, setApproveDialog] = useState({ show: false, kost: null });
 
   useEffect(() => {
     // Redirect if not admin
@@ -93,11 +96,10 @@ function SuperAdminDashboard() {
   };
 
   const handleApproveKost = async (kostId) => {
-    if (!confirm('Approve kost ini? Kost akan langsung muncul di halaman publik.')) return;
-
     try {
       await api.put(`/admin/kost/${kostId}/approve`);
       alert('✅ Kost berhasil diapprove!');
+      setApproveDialog({ show: false, kost: null });
       fetchDashboardData();
     } catch (error) {
       console.error('Error approving kost:', error);
@@ -378,7 +380,7 @@ function SuperAdminDashboard() {
                       <div className="flex gap-2 flex-shrink-0">
                         {!kost.is_approved && (
                           <button
-                            onClick={() => handleApproveKost(kost.id)}
+                            onClick={() => setApproveDialog({ show: true, kost })}
                             className="p-2 hover:bg-green-50 rounded-lg transition-colors text-green-600 hover:scale-110"
                             title="Approve Kost"
                           >
@@ -408,6 +410,82 @@ function SuperAdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Approve Dialog */}
+      {approveDialog.show && approveDialog.kost && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-5 text-white">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <CheckCircle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Approve Kost</h3>
+                  <p className="text-sm text-green-100">Konfirmasi persetujuan kost</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {/* Kost Preview */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex gap-4">
+                  <img
+                    src={approveDialog.kost.primary_image || 'https://via.placeholder.com/80'}
+                    alt={approveDialog.kost.name}
+                    className="h-20 w-20 rounded-lg object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 mb-1 truncate">
+                      {approveDialog.kost.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 mb-2">{approveDialog.kost.city}</p>
+                    <p className="text-sm font-semibold text-blue-600">
+                      {formatCurrency(approveDialog.kost.price_monthly)}/bulan
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Message */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex gap-3">
+                  <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-blue-900 mb-1">
+                      Kost akan langsung muncul di halaman publik
+                    </p>
+                    <p className="text-blue-700">
+                      Pastikan data kost sudah sesuai dan memenuhi standar sebelum menyetujui.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setApproveDialog({ show: false, kost: null })}
+                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                  <X className="h-5 w-5" />
+                  Batal
+                </button>
+                <button
+                  onClick={() => handleApproveKost(approveDialog.kost.id)}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-green-500/30"
+                >
+                  <Check className="h-5 w-5" />
+                  Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
