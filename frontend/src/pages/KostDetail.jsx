@@ -17,22 +17,23 @@ function KostDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
 
   // Memoize map center to prevent re-creation on every render
-  const mapCenter = useMemo(() => {
+/*  const mapCenter = useMemo(() => {
     if (kost?.latitude && kost?.longitude) {
       return [parseFloat(kost.latitude), parseFloat(kost.longitude)];
     }
     return [-5.1477, 119.4327]; // Default Makassar
-  }, [kost?.latitude, kost?.longitude]);
+  }, [kost?.latitude, kost?.longitude]); */
 
   console.log('🏠 KostDetail render:', { id, hasUser: !!user, kost: kost?.name });
 
-  const fetchKostDetail = async () => {
+  const fetchKostDetail = async (signal) => {
     try {
       setLoading(true);
       setError('');
-      const { data } = await api.get(`/kost/${id}`);
+      const { data } = await api.get(`/kost/${id}`, { signal });
       setKost(data.data);
     } catch (err) {
+      if (err.name === 'CanceledError' || err.name === 'AbortError') return;
       setError('Gagal memuat detail kost');
       console.error(err);
     } finally {
@@ -42,8 +43,18 @@ function KostDetail() {
 
   useEffect(() => {
     console.log('🔄 KostDetail useEffect triggered for id:', id);
-    // Component will remount on route change due to key prop in wrapper
-    fetchKostDetail();
+    // Reset UI immediately on id change
+    setKost(null);
+    setSelectedImage(0);
+    setError('');
+    setLoading(true);
+
+    const controller = new AbortController();
+    fetchKostDetail(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -118,12 +129,11 @@ function KostDetail() {
               <div className="relative aspect-[16/10] bg-muted">
                 {images.length > 0 ? (
                   <img 
-                    src={images[selectedImage]?.image_url} 
+                    key={`${id}-main-${selectedImage}`}
+                    src={images[selectedImage]?.image_url}
                     alt={kost.name}
                     className="h-full w-full object-cover"
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/800x500?text=No+Image';
-                    }}
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/800x500?text=No+Image'; }}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-muted-foreground">
@@ -229,13 +239,14 @@ function KostDetail() {
                   <div className="border-t pt-6">
                     <h2 className="text-xl font-semibold mb-4">Lokasi</h2>
                     <div className="rounded-lg overflow-hidden border">
-                      <MapView
-                        singleKost={kost}
-                        center={mapCenter}
-                        zoom={15}
-                        height="300px"
-                        showUserLocation={true}
-                      />
+                     {/* <MapView
+                      key={`${id}-${mapCenter[0]}-${mapCenter[1]}`}
+                      singleKost={kost}
+                      center={mapCenter}
+                      zoom={15}
+                      height="300px"
+                      showUserLocation={true}
+                      />} */}
                     </div>
                     <div className="mt-3 text-sm text-muted-foreground">
                       <MapPin className="h-4 w-4 inline mr-1" />
