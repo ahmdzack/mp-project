@@ -38,9 +38,16 @@ const KostEdit = () => {
   const [imagesToDelete, setImagesToDelete] = useState([]);
 
   useEffect(() => {
+    // Redirect if not pemilik
+    if (user && user.role !== 'pemilik') {
+      alert('⚠️ Akses Ditolak!\n\nHanya pemilik kost yang dapat mengedit kost.\nSilakan login sebagai pemilik kost atau hubungi admin.');
+      navigate('/');
+      return;
+    }
+
     fetchKostData();
     fetchMasterData();
-  }, [id]);
+  }, [id, user, navigate]);
 
   const fetchKostData = async () => {
     try {

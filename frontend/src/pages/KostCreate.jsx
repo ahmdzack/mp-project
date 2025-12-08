@@ -39,6 +39,7 @@ function KostCreate() {
   useEffect(() => {
     // Redirect if not pemilik
     if (user && user.role !== 'pemilik') {
+      alert('⚠️ Akses Ditolak!\n\nHanya pemilik kost yang dapat menambahkan kost.\nSilakan login sebagai pemilik kost atau hubungi admin.');
       navigate('/');
       return;
     }
