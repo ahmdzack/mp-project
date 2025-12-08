@@ -51,7 +51,7 @@ function Navbar() {
               Beranda
             </Link>
             
-            {user?.role !== 'admin' && (
+            {user?.role !== 'admin' && user?.role !== 'pemilik' && (
               <Link to="/kost" className="text-sm font-medium hover:text-primary hover:font-semibold transition-all">
                 Cari Kost
               </Link>
@@ -168,7 +168,7 @@ function Navbar() {
                 Beranda
               </Link>
               
-              {user?.role !== 'admin' && (
+              {user?.role !== 'admin' && user?.role !== 'pemilik' && (
                 <Link 
                   to="/kost" 
                   className="text-sm font-medium hover:text-primary transition-colors"
