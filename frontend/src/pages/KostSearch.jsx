@@ -34,22 +34,25 @@ function KostSearch() {
   // Filter states
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCity, setSelectedCity] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [maxPrice, setMaxPrice] = useState('all');
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [sortBy, setSortBy] = useState('rating');
   
-  // Facilities from API
+  // Facilities and Categories from API
   const [facilities, setFacilities] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [showAllFacilities, setShowAllFacilities] = useState(false);
 
   useEffect(() => {
     fetchKosts();
     fetchFacilities();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
     applyFilters();
-  }, [kosts, searchQuery, selectedType, selectedCity, maxPrice, selectedFacilities, sortBy, userLocation]);
+  }, [kosts, searchQuery, selectedType, selectedCity, selectedCategory, maxPrice, selectedFacilities, sortBy, userLocation]);
 
   const fetchKosts = async () => {
     try {
@@ -71,6 +74,15 @@ function KostSearch() {
       setFacilities(data.data || []);
     } catch (err) {
       console.error('Error fetching facilities:', err);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await api.get('/categories');
+      setCategories(data.data || []);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
     }
   };
 
@@ -115,6 +127,11 @@ function KostSearch() {
     // Type filter
     if (selectedType !== 'all') {
       filtered = filtered.filter(kost => kost.KostType?.name === selectedType);
+    }
+
+    // Category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(kost => kost.Category?.name === selectedCategory);
     }
 
     // City filter
@@ -199,6 +216,7 @@ function KostSearch() {
   const resetFilters = () => {
     setSelectedType('all');
     setSelectedCity('all');
+    setSelectedCategory('all');
     setMaxPrice('all');
     setSelectedFacilities([]);
     setSortBy('rating');
@@ -307,6 +325,21 @@ function KostSearch() {
                     <option value="all">Semua Tipe</option>
                     {types.map(type => (
                       <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Kategori */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Kategori</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="all">Semua Kategori</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.name}>{category.name}</option>
                     ))}
                   </select>
                 </div>
