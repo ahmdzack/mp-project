@@ -17,12 +17,12 @@ function KostDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
 
   // Memoize map center to prevent re-creation on every render
-/*  const mapCenter = useMemo(() => {
+  const mapCenter = useMemo(() => {
     if (kost?.latitude && kost?.longitude) {
       return [parseFloat(kost.latitude), parseFloat(kost.longitude)];
     }
     return [-5.1477, 119.4327]; // Default Makassar
-  }, [kost?.latitude, kost?.longitude]); */
+  }, [kost?.latitude, kost?.longitude]); 
 
   console.log('🏠 KostDetail render:', { id, hasUser: !!user, kost: kost?.name });
 
@@ -239,14 +239,14 @@ function KostDetail() {
                   <div className="border-t pt-6">
                     <h2 className="text-xl font-semibold mb-4">Lokasi</h2>
                     <div className="rounded-lg overflow-hidden border">
-                     {/* <MapView
+                      <MapView
                       key={`${id}-${mapCenter[0]}-${mapCenter[1]}`}
                       singleKost={kost}
                       center={mapCenter}
                       zoom={15}
                       height="300px"
                       showUserLocation={true}
-                      />} */}
+                      />
                     </div>
                     <div className="mt-3 text-sm text-muted-foreground">
                       <MapPin className="h-4 w-4 inline mr-1" />
