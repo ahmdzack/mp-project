@@ -42,22 +42,49 @@ function KostDetail() {
     }
   };
 
-  useEffect(() => {
-    setKost(null);
-    setSelectedImage(0);
-    setError('');
-    setLoading(true);
-    // Reset navigating state saat halaman dimuat
-    setIsNavigating(false);
+// Global capture click listener: deteksi klik pada <a> internal
+useEffect(() => {
+  const onDocumentClick = (e) => {
+    try {
+      const anchor = e.target.closest && e.target.closest('a');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      // Hanya link internal SPA (mulai dengan '/') dan bukan anchor fragment atau external
+      if (!href) return;
+      const isInternal = href.startsWith('/') && !href.startsWith('//') && !href.startsWith('#');
+      if (!isInternal) return;
 
-    const controller = new AbortController();
-    fetchKostDetail(controller.signal);
+      // Jika link melakukan navigasi dalam aplikasi, set isNavigating agar Map di-unmount dulu
+      setIsNavigating(true);
 
-    return () => {
-      controller.abort();
-    };
-  }, [id]);
+      // Kembalikan state setelah delay supaya komponen bisa dirender lagi jika user kembali cepat
+      // Delay perlu cukup untuk Map cleanup (100-400ms). Sesuaikan jika perlu.
+      const t = setTimeout(() => setIsNavigating(false), 400);
 
+      // Jika user menavigasi ke halaman lain, KostDetail akan unmount; tapi timeout cleanup tetap aman.
+      // Simpan timeout id di elemen untuk cleanup jika diperlukan.
+      (anchor.dataset || (anchor.dataset = {})).__navTimeout = t;
+    } catch (err) {
+      // safety
+      console.error('onDocumentClick error', err);
+    }
+  };
+
+  // Capture phase agar handler berjalan sebelum React Router Link handler
+  document.addEventListener('click', onDocumentClick, true);
+
+  return () => {
+    document.removeEventListener('click', onDocumentClick, true);
+    // clear any leftover timeouts stored on anchors (best-effort)
+    document.querySelectorAll('a').forEach(a => {
+      const t = a.dataset && a.dataset.__navTimeout;
+      if (t) {
+        clearTimeout(Number(t));
+        delete a.dataset.__navTimeout;
+      }
+    });
+  };
+}, []);
   const handleBooking = () => {
     if (!user) {
       navigate('/login');
