@@ -27,20 +27,40 @@ function KostDetail() {
     return [-5.1477, 119.4327]; 
   }, [kost?.latitude, kost?.longitude]);
 
-  const fetchKostDetail = async (signal) => {
-    try {
-      setLoading(true);
-      setError('');
-      const { data } = await api.get(`/kost/${id}`, { signal });
-      setKost(data.data);
-    } catch (err) {
-      if (err.name === 'CanceledError' || err.name === 'AbortError') return;
-      setError('Gagal memuat detail kost');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+
+  // Fetch kost ketika `id` berubah. Gunakan AbortController untuk membatalkan request saat unmount.
+  useEffect(() => {
+    const controller = new AbortController();
+    // safety: reset state ketika id berubah
+    setKost(null);
+    setSelectedImage(0);
+    setError('');
+    setLoading(true);
+
+    (async () => {
+      try {
+        console.log('[KostDetail] fetching kost id=', id);
+        const { data } = await api.get(`/kost/${id}`, { signal: controller.signal });
+        console.log('[KostDetail] fetch success', data);
+        setKost(data.data);
+      } catch (err) {
+        const isAbort = err && (err.name === 'CanceledError' || err.name === 'AbortError' || err.code === 'ERR_CANCELED');
+        if (isAbort) {
+          console.log('[KostDetail] fetch aborted for id=', id);
+          return;
+        }
+        setError('Gagal memuat detail kost');
+        console.error('[KostDetail] fetch error', err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      controller.abort();
+    };
+  }, [id]);
 
 // Global capture click listener: deteksi klik pada <a> internal
 useEffect(() => {
